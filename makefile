@@ -34,18 +34,14 @@ dist : minify
 	mkdir -p ${DIST}
 	cp ${MIN_OUT_FILE} ${MIN_OUT_FILE}.map ${DIST}
 
-server : ${HTDOCS}
-	nghttpd -n 4 --htdocs=${HTDOCS}/ 8000 ${CERTS_DIR}/server.key ${CERTS_DIR}/server.crt
+server : ${HTDOCS} npm
+	node_modules/http-server/bin/http-server ${HTDOCS}
 
-generate_certs: ${CERTS_DIR}
-	openssl genrsa -out ${CERTS_DIR}/rootCA.key 2048
-	openssl req -x509 -new -nodes -key ${CERTS_DIR}/rootCA.key -days 1024 -out ${CERTS_DIR}/rootCA.pem
-	openssl genrsa -out ${CERTS_DIR}/server.key 2048
-	openssl req -new -key ${CERTS_DIR}/server.key -out ${CERTS_DIR}/server.csr
-	openssl x509 -req -in ${CERTS_DIR}/server.csr -CA ${CERTS_DIR}/rootCA.pem -CAkey ${CERTS_DIR}/rootCA.key -CAcreateserial -out ${CERTS_DIR}/server.crt -days 500
+npm :
+	npm install
 
 clean:: 
-	-rm -rf ${BUILD_DIR} ${HTDOCS}
+	-rm -rf ${BUILD_DIR} ${HTDOCS} node_modules
 
 distclean:: clean
 	-rm -rf ${DIST}
