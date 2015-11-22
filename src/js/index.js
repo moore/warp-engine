@@ -10,10 +10,8 @@ var width  = canvas.width;
 var height = canvas.height;
 
 var threads = [];
-var colors  = [ "orange", "blue" ];
+var colors  = [];
 
-for ( var i = 1 ; i <= 125 ; i++ )
-    threads.push( i % 2 );
 
 var drawButton = document.getElementById("draw");
 
@@ -22,7 +20,8 @@ drawButton.onclick = draw;
 var codemirrorDiv = document.getElementById("codemirror");
 
 var editor = CodeMirror( codemirrorDiv, {
-  mode:  "javascript"
+    value : 'colors  = [ "LightCoral", "Plum", "SeaGreen" ];\nthreads = [ ];\n\nfor (var i = 0; i < 100; i++ )\n  for ( var j = 0 ; j < 3 ; j++ )\n    threads.push(j);',
+    mode:  "javascript"
 });
 
 draw();
