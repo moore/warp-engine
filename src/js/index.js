@@ -38,3 +38,21 @@ function draw () {
 	ctx.fillRect( offset, 0, threadWidth, height );
     }		      
 }
+
+function shuffle (array) {
+    var halfLength = Math.ceil(array.length/2);
+    var firstHalf = array.slice(0, halfLength);
+    var lastHalf = array.slice(halfLength, array.length);
+    var shuffledArray = [];
+
+    while (firstHalf.length != 0 && lastHalf.length != 0) {
+	var n = Math.random();
+	if (n < 0.5) {
+	    shuffledArray.push(firstHalf.shift())
+	} else {
+	    shuffledArray.push(lastHalf.shift())
+	}   
+    }
+
+    return shuffledArray.concat(firstHalf.concat(lastHalf));
+}
