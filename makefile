@@ -1,6 +1,6 @@
 DIST              := dist
 HTDOCS            := htdocs
-TS_DIR            := src/ts
+JS_DIR            := src/js
 HTML_DIR          := src/html
 
 CERTS_DIR    = certs
@@ -17,11 +17,13 @@ ${BUILD_JS_DIR}:
 	mkdir -p ${BUILD_JS_DIR}
 
 js : ${BUILD_JS_DIR}
-	tsc --outDir ${BUILD_JS_DIR}  --module commonjs ${TS_DIR}/index.ts
-	browserify ${BUILD_JS_DIR}/index.js --debug | exorcist ${OUT_FILE}.map > ${OUT_FILE}
+	browserify ${JS_DIR}/index.js --debug | exorcist ${OUT_FILE}.map > ${OUT_FILE}
 
 ${HTDOCS}: js
 	mkdir -p ${HTDOCS}
+	mkdir -p ${HTDOCS}/lib
+	cp lib/js/codemirror-5.8/lib/* ${HTDOCS}/lib/
+	cp lib/js/codemirror-5.8/mode/javascript/javascript.js ${HTDOCS}/lib/codemirror-javascript-mode.js
 	cp ${OUT_FILE} ${OUT_FILE}.map ${HTDOCS}
 	cp -r ${HTML_DIR}/* ${HTDOCS}
 
