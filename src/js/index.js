@@ -25,7 +25,8 @@ if ( code === null )
 
 var editor = CodeMirror( codemirrorDiv, {
     value : code,
-    mode:  "javascript"
+    mode:  "javascript",
+	keyMap: "vim",
 });
 
 draw();
