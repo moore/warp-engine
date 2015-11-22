@@ -17,9 +17,9 @@ ${BUILD_JS_DIR}:
 	mkdir -p ${BUILD_JS_DIR}
 
 js : ${BUILD_JS_DIR}
-	browserify ${JS_DIR}/index.js --debug | exorcist ${OUT_FILE}.map > ${OUT_FILE}
+	browserify ${JS_DIR}/index.js --debug | node_modules/exorcist/bin/exorcist.js ${OUT_FILE}.map > ${OUT_FILE}
 
-${HTDOCS}: js
+${HTDOCS}: js npm
 	mkdir -p ${HTDOCS}
 	mkdir -p ${HTDOCS}/lib
 	cp lib/js/codemirror-5.8/lib/* ${HTDOCS}/lib/

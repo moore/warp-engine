@@ -4,6 +4,7 @@
   "description": "Design a warp with javascript",
   "main": "index.js",
   "dependencies": {
+    "exorcist": "^0.4.0",
     "http-server": "^0.8.5"
   },
   "devDependencies": {},
