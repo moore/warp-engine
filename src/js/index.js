@@ -15,6 +15,10 @@ var colors  = [ "orange", "blue" ];
 for ( var i = 1 ; i <= 125 ; i++ )
     threads.push( i % 2 );
 
+var drawButton = document.getElementById("draw");
+
+drawButton.onclick = draw;
+
 var codemirrorDiv = document.getElementById("codemirror");
 
 var editor = CodeMirror( codemirrorDiv, {
@@ -24,6 +28,9 @@ var editor = CodeMirror( codemirrorDiv, {
 draw();
 
 function draw () {
+
+    eval(editor.getValue());
+    
     var threadWidth = width / threads.length;
     for ( var i = 0 ; i < threads.length ; i++ ) {
 	var offset = i * threadWidth;
