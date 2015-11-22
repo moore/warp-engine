@@ -21,7 +21,8 @@ var codemirrorDiv = document.getElementById("codemirror");
 
 var editor = CodeMirror( codemirrorDiv, {
     value : 'colors  = [ "LightCoral", "Plum", "SeaGreen" ];\nthreads = [ ];\n\nfor (var i = 0; i < 100; i++ )\n  for ( var j = 0 ; j < 3 ; j++ )\n    threads.push(j);',
-    mode:  "javascript"
+    mode:  "javascript",
+	keyMap: "vim",
 });
 
 draw();

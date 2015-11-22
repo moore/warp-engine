@@ -22,8 +22,10 @@ js : ${BUILD_JS_DIR}
 ${HTDOCS}: js npm
 	mkdir -p ${HTDOCS}
 	mkdir -p ${HTDOCS}/lib
+	mkdir -p ${HTDOCS}/lib/keymap
 	cp lib/js/codemirror-5.8/lib/* ${HTDOCS}/lib/
 	cp lib/js/codemirror-5.8/mode/javascript/javascript.js ${HTDOCS}/lib/codemirror-javascript-mode.js
+	cp lib/js/codemirror-5.8/keymap/* ${HTDOCS}/lib/keymap/
 	cp ${OUT_FILE} ${OUT_FILE}.map ${HTDOCS}
 	cp -r ${HTML_DIR}/* ${HTDOCS}
 
