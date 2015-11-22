@@ -18,9 +18,13 @@ var drawButton = document.getElementById("draw");
 drawButton.onclick = draw;
 
 var codemirrorDiv = document.getElementById("codemirror");
+var code = localStorage.getItem( 'code' );
+console.log( "code: ", code );
+if ( code === null )
+    code = 'colors  = [ "LightCoral", "Plum", "SeaGreen" ];\nthreads = [ ];\n\nfor (var i = 0; i < 100; i++ )\n  for ( var j = 0 ; j < 3 ; j++ )\n    threads.push(j);';
 
 var editor = CodeMirror( codemirrorDiv, {
-    value : 'colors  = [ "LightCoral", "Plum", "SeaGreen" ];\nthreads = [ ];\n\nfor (var i = 0; i < 100; i++ )\n  for ( var j = 0 ; j < 3 ; j++ )\n    threads.push(j);',
+    value : code,
     mode:  "javascript",
 	keyMap: "vim",
 });
@@ -28,8 +32,10 @@ var editor = CodeMirror( codemirrorDiv, {
 draw();
 
 function draw () {
+    var code = editor.getValue();
 
-    eval(editor.getValue());
+    eval( code );
+    localStorage.setItem( 'code', code );
     
     var threadWidth = width / threads.length;
     for ( var i = 0 ; i < threads.length ; i++ ) {

@@ -16,10 +16,10 @@ all:: ${HTDOCS}
 ${BUILD_JS_DIR}:
 	mkdir -p ${BUILD_JS_DIR}
 
-js : ${BUILD_JS_DIR}
+js : ${BUILD_JS_DIR} npm
 	browserify ${JS_DIR}/index.js --debug | node_modules/exorcist/bin/exorcist.js ${OUT_FILE}.map > ${OUT_FILE}
 
-${HTDOCS}: js npm
+${HTDOCS}: js
 	mkdir -p ${HTDOCS}
 	mkdir -p ${HTDOCS}/lib
 	mkdir -p ${HTDOCS}/lib/keymap
