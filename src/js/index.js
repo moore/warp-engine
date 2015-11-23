@@ -1,17 +1,9 @@
 var canvas =  document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
-var bodyStyle = getComputedStyle(document.body);
-
-canvas.width  = +bodyStyle.width.slice(0, -2);
-canvas.height = +bodyStyle.height.slice(0, -2);
-
-var width  = canvas.width;
-var height = canvas.height;
-
+var threadWidth = 1;
 var threads = [];
 var colors  = [];
-
 
 var drawButton = document.getElementById("draw");
 
@@ -27,6 +19,7 @@ var editor = CodeMirror( codemirrorDiv, {
     value : code,
     mode:  "javascript",
 	keyMap: "vim",
+	lineNumbers: true,
 });
 
 draw();
@@ -36,16 +29,37 @@ function draw () {
 
     eval( code );
     localStorage.setItem( 'code', code );
+	canvas.width = threads.length;
 	
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    var threadWidth = width / threads.length;
     for ( var i = 0 ; i < threads.length ; i++ ) {
 	var offset = i * threadWidth;
 
 	ctx.fillStyle = colors[ threads[ i ] ];
-	ctx.fillRect( offset, 0, threadWidth, height );
+	ctx.fillRect( offset, 0, threadWidth, canvas.height );
     }		      
+	buildColorTable();
+}
+
+function buildColorTable () {
+	var colorTable = document.getElementById("color-table");
+	colorTable.innerHTML = "";
+	for (var i = 0; i < colors.length; i ++) {
+		
+		var colorDiv = document.createElement("div");
+		var colorIndex = document.createTextNode(i);
+		var colorSwatch = document.createElement("div");
+
+		colorDiv.classList.add("color-div");
+		colorSwatch.classList.add("color-swatch");
+
+		colorSwatch.style.backgroundColor = colors[i];
+
+		colorDiv.appendChild(colorIndex);
+		colorDiv.appendChild(colorSwatch);
+		colorTable.appendChild(colorDiv);
+	}
 }
 
 function shuffle (array) {
