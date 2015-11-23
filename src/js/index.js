@@ -13,6 +13,9 @@ drawButton.onclick = draw;
 var paletteModeSelector = document.getElementById("palette-mode");
 paletteModeSelector.onchange = paletteModeSelect;
 
+var editorSelector = document.getElementById("editor-mode");
+editorSelector.onchange = editorSelect;
+
 var codemirrorDiv = document.getElementById("codemirror");
 var code = localStorage.getItem( 'code' );
 
@@ -88,6 +91,17 @@ function paletteModeSelect () {
 	} else {
 		palette.classList.add("show-count");
 		palette.classList.remove("show-index");
+	}
+}
+
+function editorSelect () {
+	var mode = editorSelector.value;
+	if (mode === "vim") {
+		editor.setOption("keyMap", "vim");
+		console.log(editor.options.keyMap);
+	} else {
+		editor.setOption("keyMap", "default");
+		console.log(editor.options.keyMap);
 	}
 }
 
