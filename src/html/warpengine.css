@@ -1,0 +1,33 @@
+#toolbar {
+  margin-bottom: 5px;
+}
+
+#toolbar button {
+	margin-right: 10px;
+}
+
+#canvas {
+	border: 1px solid black;
+}
+
+.show-index span.color-count {
+	display: none;
+}
+
+.show-count span.color-index {
+	display: none;
+}
+
+div.color-div {
+	overflow: hidden;
+	display: inline-block;
+	margin-right: 10px;
+	font-family: monospace;
+}
+
+div.color-swatch {
+	width: 2em;
+	height: 1.2em;
+	float: left;
+	margin-right: 2px;
+}

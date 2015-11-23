@@ -3,13 +3,27 @@
   <head>
     <script src="lib/codemirror.js"></script>
     <link rel="stylesheet" href="lib/codemirror.css">
+    <link rel="stylesheet" href="warpengine.css">
     <script src="lib/codemirror-javascript-mode.js"></script>
 	<script src="lib/keymap/vim.js"></script>
   </head>
   <body>
-    <canvas id="canvas" style="border: 1px solid black"></canvas>
-    <button id="draw">Draw!</button>
+    <canvas id="canvas"></canvas>
+	
+	<div id="color-palette" class="show-index"></div>
+
+	<div id="toolbar">
+		<button id="draw">draw</button>
+		<label>palette:
+		<select name="palette mode" id="palette-mode">
+			<option value="palette-by-index" selected>show indexes</option> 
+			<option value="palette-by-count">show counts</option>
+		</select>
+		</label>
+	</div>
+
     <div id="codemirror"></div>
+
     <script src="warp-engine.js">
     </script>
 </body>

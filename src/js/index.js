@@ -1,21 +1,17 @@
 var canvas =  document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
-var bodyStyle = getComputedStyle(document.body);
+var palette = document.getElementById("color-palette");
 
-canvas.width  = +bodyStyle.width.slice(0, -2);
-canvas.height = +bodyStyle.height.slice(0, -2);
-
-var width  = canvas.width;
-var height = canvas.height;
-
+var threadWidth = 1;
 var threads = [];
 var colors  = [];
 
-
 var drawButton = document.getElementById("draw");
-
 drawButton.onclick = draw;
+
+var paletteModeSelector = document.getElementById("palette-mode");
+paletteModeSelector.onchange = paletteModeSelect;
 
 var codemirrorDiv = document.getElementById("codemirror");
 var code = localStorage.getItem( 'code' );
@@ -27,6 +23,7 @@ var editor = CodeMirror( codemirrorDiv, {
     value : code,
     mode:  "javascript",
 	keyMap: "vim",
+	lineNumbers: true,
 });
 
 draw();
@@ -36,14 +33,62 @@ function draw () {
 
     eval( code );
     localStorage.setItem( 'code', code );
+	canvas.width = threads.length;
+	
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    var threadWidth = width / threads.length;
     for ( var i = 0 ; i < threads.length ; i++ ) {
 	var offset = i * threadWidth;
 
 	ctx.fillStyle = colors[ threads[ i ] ];
-	ctx.fillRect( offset, 0, threadWidth, height );
+	ctx.fillRect( offset, 0, threadWidth, canvas.height );
     }		      
+	buildPalette();
+}
+
+function buildPalette () {
+	
+	var colorCounts = [];
+	for (var i = 0; i < colors.length; i ++)
+		colorCounts[i] = 0;
+	for (var i = 0; i < threads.length; i ++)
+		colorCounts[threads[i]]++;
+
+	palette.innerHTML = "";
+
+	for (var i = 0; i < colors.length; i ++) {
+		
+		var colorDiv = document.createElement("div");
+		var colorIndex = document.createTextNode(i);
+		var indexSpan = document.createElement("span");
+		var colorCount = document.createTextNode(colorCounts[i]);
+		var countSpan = document.createElement("span");
+		var colorSwatch = document.createElement("div");
+
+		colorDiv.classList.add("color-div");
+		colorSwatch.classList.add("color-swatch");
+		indexSpan.classList.add("color-index");
+		countSpan.classList.add("color-count");
+
+		colorSwatch.style.backgroundColor = colors[i];
+		
+		indexSpan.appendChild(colorIndex);
+		countSpan.appendChild(colorCount);
+		colorDiv.appendChild(indexSpan);
+		colorDiv.appendChild(countSpan);
+		colorDiv.appendChild(colorSwatch);
+		palette.appendChild(colorDiv);
+	}
+}
+
+function paletteModeSelect () {
+	if (paletteModeSelector.value === "palette-by-index") {
+		palette.classList.add("show-index");
+		palette.classList.remove("show-count");
+	} else {
+		palette.classList.add("show-count");
+		palette.classList.remove("show-index");
+	}
 }
 
 function shuffle (array) {
