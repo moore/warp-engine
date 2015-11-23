@@ -36,6 +36,8 @@ function draw () {
 
     eval( code );
     localStorage.setItem( 'code', code );
+	
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     var threadWidth = width / threads.length;
     for ( var i = 0 ; i < threads.length ; i++ ) {
