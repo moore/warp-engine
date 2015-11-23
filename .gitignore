@@ -3,3 +3,5 @@
 htdocs
 build
 downloads
+devel
+node_modules
