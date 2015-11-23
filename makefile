@@ -1,17 +1,38 @@
 DIST              := dist
 HTDOCS            := htdocs
+GO_DIR            := src/go
 JS_DIR            := src/js
 HTML_DIR          := src/html
+
+GO_HOME = go-libs/
+
 
 CERTS_DIR    = certs
 BUILD_DIR    = build
 BUILD_JS_DIR = ${BUILD_DIR}/js
+BUILD_GO_DIR = ${BUILD_DIR}/go
 
 OUT_FILE     = ${BUILD_JS_DIR}/warp-engine.js
 MIN_OUT_FILE = ${BUILD_JS_DIR}/warp-engine.min.js
 
 .PHONY: all clean distclean 
 all:: ${HTDOCS}
+
+${BUILD_GO_DIR}:
+	mkdir -p ${BUILD_GO_DIR}
+
+${GO_HOME}:
+	mkdir -p ${GO_HOME}
+
+
+go : ${BUILD_GO_DIR} ${GO_HOME}
+	#GOPATH=`pwd`/${GO_HOME} go build -o ${BUILD_GO_DIR}/server go-libs/planet.com/go-message/server.go
+
+deploy : ${GO_HOME}  ${HTDOCS}
+	cp -r ${GO_DIR}/* ${GO_HOME}
+	cp -r ${HTDOCS} ${GO_HOME}
+	cd ${GO_HOME} && aedeploy gcloud preview app deploy app.yaml --promote
+
 
 ${BUILD_JS_DIR}:
 	mkdir -p ${BUILD_JS_DIR}
@@ -43,7 +64,7 @@ npm :
 	npm install
 
 clean:: 
-	-rm -rf ${BUILD_DIR} ${HTDOCS} node_modules
+	-rm -rf ${BUILD_DIR} ${HTDOCS} ${GO_HOME}
 
 distclean:: clean
 	-rm -rf ${DIST}
