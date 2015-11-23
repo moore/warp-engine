@@ -10,10 +10,16 @@
   <body>
     <canvas id="canvas"></canvas>
 	
-	<div id="color-table"></div>
+	<div id="color-palette" class="show-index"></div>
 
 	<div id="toolbar">
-		<button id="draw">Draw!</button>
+		<button id="draw">draw</button>
+		<label>palette:
+		<select name="palette mode" id="palette-mode">
+			<option value="palette-by-index" selected>show indexes</option> 
+			<option value="palette-by-count">show counts</option>
+		</select>
+		</label>
 	</div>
 
     <div id="codemirror"></div>

@@ -1,13 +1,17 @@
 var canvas =  document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
+var palette = document.getElementById("color-palette");
+
 var threadWidth = 1;
 var threads = [];
 var colors  = [];
 
 var drawButton = document.getElementById("draw");
-
 drawButton.onclick = draw;
+
+var paletteModeSelector = document.getElementById("palette-mode");
+paletteModeSelector.onchange = paletteModeSelect;
 
 var codemirrorDiv = document.getElementById("codemirror");
 var code = localStorage.getItem( 'code' );
@@ -39,26 +43,51 @@ function draw () {
 	ctx.fillStyle = colors[ threads[ i ] ];
 	ctx.fillRect( offset, 0, threadWidth, canvas.height );
     }		      
-	buildColorTable();
+	buildPalette();
 }
 
-function buildColorTable () {
-	var colorTable = document.getElementById("color-table");
-	colorTable.innerHTML = "";
+function buildPalette () {
+	
+	var colorCounts = [];
+	for (var i = 0; i < colors.length; i ++)
+		colorCounts[i] = 0;
+	for (var i = 0; i < threads.length; i ++)
+		colorCounts[threads[i]]++;
+
+	palette.innerHTML = "";
+
 	for (var i = 0; i < colors.length; i ++) {
 		
 		var colorDiv = document.createElement("div");
 		var colorIndex = document.createTextNode(i);
+		var indexSpan = document.createElement("span");
+		var colorCount = document.createTextNode(colorCounts[i]);
+		var countSpan = document.createElement("span");
 		var colorSwatch = document.createElement("div");
 
 		colorDiv.classList.add("color-div");
 		colorSwatch.classList.add("color-swatch");
+		indexSpan.classList.add("color-index");
+		countSpan.classList.add("color-count");
 
 		colorSwatch.style.backgroundColor = colors[i];
-
-		colorDiv.appendChild(colorIndex);
+		
+		indexSpan.appendChild(colorIndex);
+		countSpan.appendChild(colorCount);
+		colorDiv.appendChild(indexSpan);
+		colorDiv.appendChild(countSpan);
 		colorDiv.appendChild(colorSwatch);
-		colorTable.appendChild(colorDiv);
+		palette.appendChild(colorDiv);
+	}
+}
+
+function paletteModeSelect () {
+	if (paletteModeSelector.value === "palette-by-index") {
+		palette.classList.add("show-index");
+		palette.classList.remove("show-count");
+	} else {
+		palette.classList.add("show-count");
+		palette.classList.remove("show-index");
 	}
 }
 
