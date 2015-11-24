@@ -145,3 +145,12 @@ function shuffle (array) {
 
     return shuffledArray.concat(firstHalf.concat(lastHalf));
 }
+
+function repeat ( count, values ) {
+    var result = [];
+
+    for ( var i = 0 ; i < count ; i++ )
+	result = result.concat( values );
+
+    return result;
+}
