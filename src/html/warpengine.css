@@ -1,8 +1,7 @@
 #toolbar {
-	float: left;
 	width: 100%;
 	margin-bottom: 5px;
-	font-family: Arial; 
+	font-family: monospace; 
 	font-size: 12px; 
 	color: #666666; 
 }
@@ -41,7 +40,7 @@ button:hover {
 }
 
 #warp-data {
-	float: left;
+	overflow: hidden;
 	font-family: monospace;
 	font-size: 12px;
 	color: #666666;
@@ -75,9 +74,5 @@ div.color-swatch {
 	height: 1.2em;
 	float: left;
 	margin-right: 2px;
-}
-
-#codemirror {
-	float: left;
 }
 
