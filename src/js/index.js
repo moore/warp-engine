@@ -1,7 +1,8 @@
+var codeOutput = document.getElementById("code-output");
+
 var canvas =  document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
-var warpData = document.getElementById("warp-data");
 var palette = document.getElementById("color-palette");
 var warpEnds = document.getElementById("warp-ends");
 
@@ -31,7 +32,17 @@ var editor = CodeMirror( codemirrorDiv, {
 	lineNumbers: true,
 });
 
+setTimeout(resizeEditor, 0);
 draw();
+window.onresize = resizeEditor;
+return;
+
+function resizeEditor () {
+	var editor = document.querySelector(".CodeMirror");
+	var editorPosition = editor.getBoundingClientRect();
+	var bodyMargin = +(getComputedStyle(document.body).marginBottom.slice(0, -2));
+	editor.style.height = (window.innerHeight - editorPosition.top - bodyMargin) + "px";
+}
 
 function draw () {
     var code = editor.getValue();
@@ -49,7 +60,7 @@ function draw () {
 	ctx.fillRect( offset, 0, threadWidth, canvas.height );
     }		      
 
-	warpData.style.width = (threads.length + "px");
+	codeOutput.style.width = ((threads.length + 2) + "px");
 	updateWarpCount();
 	buildPalette();
 }

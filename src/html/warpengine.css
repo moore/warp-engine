@@ -1,3 +1,12 @@
+body {
+	margin-bottom: 10px;
+}
+
+#code-output {
+	margin-left: auto;
+	margin-right: auto;
+}
+
 #toolbar {
 	width: 100%;
 	margin-bottom: 5px;
@@ -76,3 +85,8 @@ div.color-swatch {
 	margin-right: 2px;
 }
 
+#code-editor{
+	width: 900px;
+	margin-left: auto;
+	margin-right: auto;
+}
