@@ -1,4 +1,6 @@
 #toolbar {
+	float: left;
+	width: 100%;
 	margin-bottom: 5px;
 	font-family: Arial; 
 	font-size: 12px; 
@@ -38,8 +40,20 @@ button:hover {
 	border: 1px solid black;
 }
 
+#warp-data {
+	float: left;
+	font-family: monospace;
+	font-size: 12px;
+	color: #666666;
+	margin-bottom: 20px;
+}
+
 #color-palette {
-	margin-bottom: 10px;
+	float: left;
+}
+
+#warp-ends {
+	float: right;
 }
 
 .show-index span.color-count {
@@ -54,7 +68,6 @@ div.color-div {
 	overflow: hidden;
 	display: inline-block;
 	margin-right: 10px;
-	font-family: monospace;
 }
 
 div.color-swatch {
@@ -63,3 +76,8 @@ div.color-swatch {
 	float: left;
 	margin-right: 2px;
 }
+
+#codemirror {
+	float: left;
+}
+

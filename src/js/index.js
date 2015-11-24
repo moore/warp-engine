@@ -1,7 +1,9 @@
 var canvas =  document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
+var warpData = document.getElementById("warp-data");
 var palette = document.getElementById("color-palette");
+var warpEnds = document.getElementById("warp-ends");
 
 var threadWidth = 1;
 var threads = [];
@@ -46,7 +48,17 @@ function draw () {
 	ctx.fillStyle = colors[ threads[ i ] ];
 	ctx.fillRect( offset, 0, threadWidth, canvas.height );
     }		      
+
+	warpData.style.width = (threads.length + "px");
+	updateWarpCount();
 	buildPalette();
+}
+
+function updateWarpCount () {
+	warpEnds.innerHTML = "";
+
+	var warpEndCount = document.createTextNode("total warp ends: " + threads.length);
+	warpEnds.appendChild(warpEndCount);	
 }
 
 function buildPalette () {
