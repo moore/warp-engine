@@ -154,3 +154,22 @@ function repeat ( count, values ) {
 
     return result;
 }
+
+function repeatFn ( count, fn, values ) {
+    var result = values;
+
+    for ( var i = 0 ; i < count ; i++ )
+	result = fn(result);
+
+    return result;
+}
+
+function stretch ( factor, values ) {
+    var result = [];
+
+    for ( var i = 0 ; i < values.length ; i++ )
+	for ( var j = 0 ; j < factor ; j++ )
+	    result.push( values[i] );
+
+    return result;
+}
