@@ -20,7 +20,8 @@ var editorSelector = document.getElementById("editor-mode");
 editorSelector.onchange = editorSelect;
 
 var codemirrorDiv = document.getElementById("codemirror");
-var code = localStorage.getItem( 'code' );
+var warpId = getWarpId();
+var code = load( warpId );
 
 if ( code === null )
     code = 'colors  = [ "LightCoral", "Plum", "SeaGreen" ];\nthreads = [ ];\n\nfor (var i = 0; i < 100; i++ )\n  for ( var j = 0 ; j < 3 ; j++ )\n    threads.push(j);';
@@ -35,7 +36,7 @@ var editor = CodeMirror( codemirrorDiv, {
 setTimeout(resizeEditor, 0);
 draw();
 window.onresize = resizeEditor;
-return;
+
 
 function resizeEditor () {
     var editor = document.querySelector(".CodeMirror");
@@ -44,11 +45,50 @@ function resizeEditor () {
     editor.style.height = (window.innerHeight - editorPosition.top - bodyMargin) + "px";
 }
 
+function getWarpId ( ) {
+    var warpId = location.hash;
+
+    if ( warpId !== '' )
+	warpId = warpId.slice(1);
+    else {
+	warpId = makeWarpId();
+	location.hash = warpId;
+    }
+
+    return warpId;
+}
+
+function makeWarpId ( ) {
+    var buf = new Uint8Array(16);
+    window.crypto.getRandomValues(buf);
+    return "edit:" + btoa( uint8ToString( buf ) ).slice(0,-2);
+}
+
+function uint8ToString ( u8a ) {
+  var CHUNK_SZ = 0x8000;
+  var c        = [];
+
+    for ( var i=0 ; i < u8a.length ; i+=CHUNK_SZ ) {
+    c.push( String.fromCharCode.apply( null, u8a.subarray( i, i+CHUNK_SZ ) ) );
+  }
+  return c.join("");
+}
+
+function save ( warpId, code ) {
+    localStorage.setItem( warpId, code );
+}
+
+function load ( warpId ) {
+    return localStorage.getItem( warpId );
+}
+
 function draw () {
     var code = editor.getValue();
 
     eval( code );
-    localStorage.setItem( 'code', code );
+
+    save( warpId, code );
+    
     canvas.width = threads.length;
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
