@@ -19,7 +19,7 @@ paletteModeSelector.onchange = paletteModeSelect;
 var editorSelector = document.getElementById("editor-mode");
 editorSelector.onchange = editorSelect;
 
-var codemirrorDiv = document.getElementById("codemirror");
+var codeMirrorDiv = document.getElementById("code-mirror");
 var warpId = getWarpId();
 var code = load( warpId );
 
