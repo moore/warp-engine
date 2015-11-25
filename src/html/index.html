@@ -5,39 +5,40 @@
     <link rel="stylesheet" href="lib/codemirror.css">
     <link rel="stylesheet" href="warpengine.css">
     <script src="lib/codemirror-javascript-mode.js"></script>
-	<script src="lib/keymap/vim.js"></script>
+    <script src="lib/keymap/vim.js"></script>
   </head>
   <body>
-	<div id="code-output">
-		<canvas id="canvas" height="200"></canvas>
-		
-		<div id="warp-data">	
-			<div id="warp-ends"></div>
-			<div id="color-palette" class="show-index"></div>
-		</div>
-	</div>
+    <div id="code-output">
+        <canvas id="canvas" height="200"></canvas>
+        
+        <div id="warp-data">    
+            <div id="warp-ends"></div>
+            <div id="color-palette" class="show-index"></div>
+        </div>
+    </div>
 
-	<div id="code-editor">
-		<div id="toolbar">
-			<button id="draw">draw</button>
+    <div id="code-editor">
+        <div id="toolbar">
+            <button id="draw">draw</button>
 
-			<label>palette:
-			<select name="palette mode" id="palette-mode">
-				<option value="palette-by-index" selected>show indexes</option> 
-				<option value="palette-by-count">show counts</option>
-			</select>
-			</label>
+            <label>palette:
+            <select name="palette mode" id="palette-mode">
+                <option value="palette-by-index" selected>show indexes</option> 
+                <option value="palette-by-count">show counts</option>
+            </select>
+            </label>
 
-			<label>text editor:
-			<select name="editor mode" id="editor-mode">
-				<option value="vim" selected>vim</option>
-				<option value="default">default</option> 
-			</select>
-			</label>
-		</div>
+            <label>text editor:
+            <select name="editor mode" id="editor-mode">
+                <option value="vim" selected>vim</option>
+                <option value="default">default</option> 
+            </select>
+            </label>
+        </div>
 
-		<div id="codemirror"></div>
-	</div>
+        <div id="code-mirror"></div>
+        <div id="captains-log"></div>
+    </div>
 
     <script src="warp-engine.js">
     </script>

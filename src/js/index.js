@@ -19,13 +19,15 @@ paletteModeSelector.onchange = paletteModeSelect;
 var editorSelector = document.getElementById("editor-mode");
 editorSelector.onchange = editorSelect;
 
-var codemirrorDiv = document.getElementById("codemirror");
+var codeMirrorDiv = document.getElementById("code-mirror");
 var code = localStorage.getItem( 'code' );
+
+var captainsLogDiv = document.getElementById("captains-log");
 
 if ( code === null )
     code = 'colors  = [ "LightCoral", "Plum", "SeaGreen" ];\nthreads = [ ];\n\nfor (var i = 0; i < 100; i++ )\n  for ( var j = 0 ; j < 3 ; j++ )\n    threads.push(j);';
 
-var editor = CodeMirror( codemirrorDiv, {
+var editor = CodeMirror( codeMirrorDiv, {
     value : code,
     mode:  "javascript",
     keyMap: "vim",
