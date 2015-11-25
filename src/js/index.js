@@ -28,8 +28,8 @@ if ( code === null )
 var editor = CodeMirror( codemirrorDiv, {
     value : code,
     mode:  "javascript",
-	keyMap: "vim",
-	lineNumbers: true,
+    keyMap: "vim",
+    lineNumbers: true,
 });
 
 setTimeout(resizeEditor, 0);
@@ -38,10 +38,10 @@ window.onresize = resizeEditor;
 return;
 
 function resizeEditor () {
-	var editor = document.querySelector(".CodeMirror");
-	var editorPosition = editor.getBoundingClientRect();
-	var bodyMargin = +(getComputedStyle(document.body).marginBottom.slice(0, -2));
-	editor.style.height = (window.innerHeight - editorPosition.top - bodyMargin) + "px";
+    var editor = document.querySelector(".CodeMirror");
+    var editorPosition = editor.getBoundingClientRect();
+    var bodyMargin = +(getComputedStyle(document.body).marginBottom.slice(0, -2));
+    editor.style.height = (window.innerHeight - editorPosition.top - bodyMargin) + "px";
 }
 
 function draw () {
@@ -49,83 +49,83 @@ function draw () {
 
     eval( code );
     localStorage.setItem( 'code', code );
-	canvas.width = threads.length;
-	
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.width = threads.length;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     for ( var i = 0 ; i < threads.length ; i++ ) {
-	var offset = i * threadWidth;
+        var offset = i * threadWidth;
 
-	ctx.fillStyle = colors[ threads[ i ] ];
-	ctx.fillRect( offset, 0, threadWidth, canvas.height );
-    }		      
+        ctx.fillStyle = colors[ threads[ i ] ];
+        ctx.fillRect( offset, 0, threadWidth, canvas.height );
+    }                 
 
-	codeOutput.style.width = ((threads.length + 2) + "px");
-	updateWarpCount();
-	buildPalette();
+    codeOutput.style.width = ((threads.length + 2) + "px");
+    updateWarpCount();
+    buildPalette();
 }
 
 function updateWarpCount () {
-	warpEnds.innerHTML = "";
+    warpEnds.innerHTML = "";
 
-	var warpEndCount = document.createTextNode("total warp ends: " + threads.length);
-	warpEnds.appendChild(warpEndCount);	
+    var warpEndCount = document.createTextNode("total warp ends: " + threads.length);
+    warpEnds.appendChild(warpEndCount);     
 }
 
 function buildPalette () {
-	
-	var colorCounts = [];
-	for (var i = 0; i < colors.length; i ++)
-		colorCounts[i] = 0;
-	for (var i = 0; i < threads.length; i ++)
-		colorCounts[threads[i]]++;
+    
+    var colorCounts = [];
+    for (var i = 0; i < colors.length; i ++)
+        colorCounts[i] = 0;
+    for (var i = 0; i < threads.length; i ++)
+        colorCounts[threads[i]]++;
 
-	palette.innerHTML = "";
+    palette.innerHTML = "";
 
-	for (var i = 0; i < colors.length; i ++) {
-		
-		var colorDiv = document.createElement("div");
-		var colorIndex = document.createTextNode(i);
-		var indexSpan = document.createElement("span");
-		var colorCount = document.createTextNode(colorCounts[i]);
-		var countSpan = document.createElement("span");
-		var colorSwatch = document.createElement("div");
+    for (var i = 0; i < colors.length; i ++) {
+        
+        var colorDiv = document.createElement("div");
+        var colorIndex = document.createTextNode(i);
+        var indexSpan = document.createElement("span");
+        var colorCount = document.createTextNode(colorCounts[i]);
+        var countSpan = document.createElement("span");
+        var colorSwatch = document.createElement("div");
 
-		colorDiv.classList.add("color-div");
-		colorSwatch.classList.add("color-swatch");
-		indexSpan.classList.add("color-index");
-		countSpan.classList.add("color-count");
+        colorDiv.classList.add("color-div");
+        colorSwatch.classList.add("color-swatch");
+        indexSpan.classList.add("color-index");
+        countSpan.classList.add("color-count");
 
-		colorSwatch.style.backgroundColor = colors[i];
-		
-		indexSpan.appendChild(colorIndex);
-		countSpan.appendChild(colorCount);
-		colorDiv.appendChild(indexSpan);
-		colorDiv.appendChild(countSpan);
-		colorDiv.appendChild(colorSwatch);
-		palette.appendChild(colorDiv);
-	}
+        colorSwatch.style.backgroundColor = colors[i];
+        
+        indexSpan.appendChild(colorIndex);
+        countSpan.appendChild(colorCount);
+        colorDiv.appendChild(indexSpan);
+        colorDiv.appendChild(countSpan);
+        colorDiv.appendChild(colorSwatch);
+        palette.appendChild(colorDiv);
+    }
 }
 
 function paletteModeSelect () {
-	if (paletteModeSelector.value === "palette-by-index") {
-		palette.classList.add("show-index");
-		palette.classList.remove("show-count");
-	} else {
-		palette.classList.add("show-count");
-		palette.classList.remove("show-index");
-	}
+    if (paletteModeSelector.value === "palette-by-index") {
+        palette.classList.add("show-index");
+        palette.classList.remove("show-count");
+    } else {
+        palette.classList.add("show-count");
+        palette.classList.remove("show-index");
+    }
 }
 
 function editorSelect () {
-	var mode = editorSelector.value;
-	if (mode === "vim") {
-		editor.setOption("keyMap", "vim");
-		console.log(editor.options.keyMap);
-	} else {
-		editor.setOption("keyMap", "default");
-		console.log(editor.options.keyMap);
-	}
+    var mode = editorSelector.value;
+    if (mode === "vim") {
+        editor.setOption("keyMap", "vim");
+        console.log(editor.options.keyMap);
+    } else {
+        editor.setOption("keyMap", "default");
+        console.log(editor.options.keyMap);
+    }
 }
 
 function shuffle (array) {
@@ -135,12 +135,12 @@ function shuffle (array) {
     var shuffledArray = [];
 
     while (firstHalf.length != 0 && lastHalf.length != 0) {
-	var n = Math.random();
-	if (n < 0.5) {
-	    shuffledArray.push(firstHalf.shift())
-	} else {
-	    shuffledArray.push(lastHalf.shift())
-	}   
+        var n = Math.random();
+        if (n < 0.5) {
+            shuffledArray.push(firstHalf.shift())
+        } else {
+            shuffledArray.push(lastHalf.shift())
+        }   
     }
 
     return shuffledArray.concat(firstHalf.concat(lastHalf));
@@ -150,7 +150,7 @@ function repeat ( count, values ) {
     var result = [];
 
     for ( var i = 0 ; i < count ; i++ )
-	result = result.concat( values );
+        result = result.concat( values );
 
     return result;
 }
@@ -159,7 +159,7 @@ function repeatFn ( count, fn, values ) {
     var result = values;
 
     for ( var i = 0 ; i < count ; i++ )
-	result = fn(result);
+        result = fn(result);
 
     return result;
 }
@@ -168,8 +168,8 @@ function stretch ( factor, values ) {
     var result = [];
 
     for ( var i = 0 ; i < values.length ; i++ )
-	for ( var j = 0 ; j < factor ; j++ )
-	    result.push( values[i] );
+        for ( var j = 0 ; j < factor ; j++ )
+            result.push( values[i] );
 
     return result;
 }
