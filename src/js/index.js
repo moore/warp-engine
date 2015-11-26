@@ -90,6 +90,8 @@ function load ( warpId ) {
 function draw () {
     var code = editor.getValue();
 
+    captainsLog.value = "";
+
     eval( code );
 
     save( warpId, code );
@@ -97,7 +99,7 @@ function draw () {
     canvas.width = threads.length;
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     for ( var i = 0 ; i < threads.length ; i++ ) {
         var offset = i * threadWidth;
 
@@ -181,6 +183,10 @@ function displayLog () {
         captainsLog.style.display = "none";
     }
     resizeEditor();
+}
+
+function log (text) {
+    captainsLog.value += text + "\n";
 }
 
 function shuffle (array) {
