@@ -19,14 +19,19 @@ paletteModeSelector.onchange = paletteModeSelect;
 var editorSelector = document.getElementById("editor-mode");
 editorSelector.onchange = editorSelect;
 
-var codemirrorDiv = document.getElementById("codemirror");
+var showLogCheckbox = document.getElementById("show-log");
+showLogCheckbox.onchange = displayLog;
+
+var codeMirrorDiv = document.getElementById("code-mirror");
 var warpId = getWarpId();
 var code = load( warpId );
+
+var captainsLog = document.getElementById("captains-log");
 
 if ( code === null )
     code = 'colors  = [ "LightCoral", "Plum", "SeaGreen" ];\nthreads = [ ];\n\nfor (var i = 0; i < 100; i++ )\n  for ( var j = 0 ; j < 3 ; j++ )\n    threads.push(j);';
 
-var editor = CodeMirror( codemirrorDiv, {
+var editor = CodeMirror( codeMirrorDiv, {
     value : code,
     mode:  "javascript",
     keyMap: "vim",
@@ -85,6 +90,8 @@ function load ( warpId ) {
 function draw () {
     var code = editor.getValue();
 
+    captainsLog.value = "";
+
     eval( code );
 
     save( warpId, code );
@@ -92,7 +99,7 @@ function draw () {
     canvas.width = threads.length;
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     for ( var i = 0 ; i < threads.length ; i++ ) {
         var offset = i * threadWidth;
 
@@ -145,6 +152,7 @@ function buildPalette () {
         colorDiv.appendChild(colorSwatch);
         palette.appendChild(colorDiv);
     }
+    resizeEditor();
 }
 
 function paletteModeSelect () {
@@ -161,11 +169,24 @@ function editorSelect () {
     var mode = editorSelector.value;
     if (mode === "vim") {
         editor.setOption("keyMap", "vim");
-        console.log(editor.options.keyMap);
     } else {
         editor.setOption("keyMap", "default");
-        console.log(editor.options.keyMap);
     }
+}
+
+function displayLog () {
+    var showLog = showLogCheckbox.checked;
+    if (showLog) {
+        captainsLog.style.display = "block";    
+    }
+    else {
+        captainsLog.style.display = "none";
+    }
+    resizeEditor();
+}
+
+function log (text) {
+    captainsLog.value += text + "\n";
 }
 
 function shuffle (array) {

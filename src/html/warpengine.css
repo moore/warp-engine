@@ -49,15 +49,16 @@ button:hover {
 }
 
 #warp-data {
+    min-height: 34px;
 	overflow: hidden;
 	font-family: monospace;
 	font-size: 12px;
 	color: #666666;
-	margin-bottom: 20px;
+	margin-bottom: 6px;
 }
 
 #color-palette {
-	float: left;
+    overflow: hidden;
 }
 
 #warp-ends {
@@ -75,18 +76,26 @@ button:hover {
 div.color-div {
 	overflow: hidden;
 	display: inline-block;
-	margin-right: 10px;
+	margin-right: 2px;
+    min-width: 50px;
 }
 
 div.color-swatch {
-	width: 2em;
-	height: 1.2em;
+	width: 24px;
+	height: 14px;
 	float: left;
 	margin-right: 2px;
+    border: 1px solid #eeeeee;
 }
 
 #code-editor{
 	width: 900px;
 	margin-left: auto;
 	margin-right: auto;
+}
+
+#captains-log{
+    width: 894px;
+    height: 100px;
+    display: none;
 }
