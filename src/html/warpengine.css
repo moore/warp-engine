@@ -76,15 +76,16 @@ button:hover {
 div.color-div {
 	overflow: hidden;
 	display: inline-block;
-	margin-right: 7px;
-    min-width: 47px;
+	margin-right: 2px;
+    min-width: 50px;
 }
 
 div.color-swatch {
-	width: 2em;
-	height: 1.2em;
+	width: 24px;
+	height: 14px;
 	float: left;
 	margin-right: 2px;
+    border: 1px solid #eeeeee;
 }
 
 #code-editor{
