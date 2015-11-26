@@ -19,7 +19,7 @@
 
     <div id="code-editor">
         <div id="toolbar">
-            <button id="draw">draw</button>
+            <button id="draw">make it so</button>
 
             <label>palette:
             <select name="palette mode" id="palette-mode">
@@ -34,10 +34,12 @@
                 <option value="default">default</option> 
             </select>
             </label>
+
+            <input type="checkbox" id="show-log">show log</input>
         </div>
 
+        <textarea id="captains-log" readonly>stardate 2169.3</textarea>
         <div id="code-mirror"></div>
-        <div id="captains-log"></div>
     </div>
 
     <script src="warp-engine.js">
