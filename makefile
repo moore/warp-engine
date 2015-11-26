@@ -31,7 +31,8 @@ go : ${BUILD_GO_DIR} ${GO_HOME}
 deploy : ${GO_HOME}  ${HTDOCS}
 	cp -r ${GO_DIR}/* ${GO_HOME}
 	cp -r ${HTDOCS} ${GO_HOME}
-	cd ${GO_HOME} && aedeploy gcloud preview app deploy app.yaml --promote
+	cd ${GO_HOME} && goapp deploy -application warp-engine-server
+	#aedeploy gcloud preview app deploy app.yaml --promote
 
 
 ${BUILD_JS_DIR}:

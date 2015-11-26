@@ -7,6 +7,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"encoding/json"
 	"appengine"
 	"appengine/datastore"
 )
@@ -14,7 +15,7 @@ import (
 func main() {
 	http.HandleFunc("/", handler)
 	http.HandleFunc("/get", handleGet)
-	http.HandleFunc("/set", handlerSet)
+	http.HandleFunc("/set", handleSet)
 	log.Print("Listening on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
@@ -30,6 +31,10 @@ type SetWarp struct {
 	Key      string
 	DataType string
 	Data     string
+}
+
+type GetWarp struct {
+	Key string
 }
 
 type Warp struct {
@@ -52,29 +57,41 @@ func handleSet(writer http.ResponseWriter, req *http.Request) {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 	}
 
-	var warp := Warp {
-		Key        : setWarp.Key,
-		JavaScript : setWarp.JavaScript,
+	warp := Warp {
+		Key   : setWarp.Key,
+		DataType : "JavaScript",
+		Data : setWarp.Data,
 	}
 	
 
-	key, err := datastore.Put(context,
-		datastore.NewIncompleteKey(context, warp.key, nil), &warp)
+	_, getErr := datastore.Put(context, datastore.NewIncompleteKey(context, warp.Key, nil), &warp)
 
 	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, getErr.Error(), http.StatusInternalServerError)
 		return
 	}
 
 }
 
-func handleSet(writer http.ResponseWriter, req *http.Request) {
+func handleGet(writer http.ResponseWriter, req *http.Request) {
 	context := appengine.NewContext(req)
+
+	decoder := json.NewDecoder(req.Body)
+
+	var getWarp GetWarp
 	
+	err := decoder.Decode(&getWarp)
+
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+	}
+
 	var warp Warp
 	
-	if err = datastore.Get(context, key, &warp); err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+	getErr := datastore.Get(context, datastore.NewIncompleteKey(context, getWarp.Key, nil), &warp);
+
+	if err != nil {
+		http.Error(writer, getErr.Error(), http.StatusInternalServerError)
 		return
 	}
 
