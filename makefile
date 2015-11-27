@@ -28,12 +28,16 @@ ${GO_HOME}:
 go : ${BUILD_GO_DIR} ${GO_HOME}
 	#GOPATH=`pwd`/${GO_HOME} go build -o ${BUILD_GO_DIR}/server go-libs/planet.com/go-message/server.go
 
-deploy : ${GO_HOME}  ${HTDOCS}
+prep : ${GO_HOME}  ${HTDOCS}
 	cp -r ${GO_DIR}/* ${GO_HOME}
 	cp -r ${HTDOCS} ${GO_HOME}
-	cd ${GO_HOME} && goapp deploy -application warp-engine-server
 	#aedeploy gcloud preview app deploy app.yaml --promote
 
+dev-app: prep
+	cd ${GO_HOME} && goapp serve
+
+deploy : prep
+	cd ${GO_HOME} && goapp deploy -application warp-9
 
 ${BUILD_JS_DIR}:
 	mkdir -p ${BUILD_JS_DIR}

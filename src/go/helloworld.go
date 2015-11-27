@@ -5,19 +5,16 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"encoding/json"
 	"appengine"
 	"appengine/datastore"
 )
 
-func main() {
+func init() {
 	http.HandleFunc("/", handler)
 	http.HandleFunc("/get", handleGet)
 	http.HandleFunc("/set", handleSet)
-	log.Print("Listening on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
