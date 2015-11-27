@@ -1,3 +1,5 @@
+var KEY_LENGHT = 15;
+
 var codeOutput = document.getElementById("code-output");
 
 var canvas =  document.getElementById("canvas");
@@ -23,13 +25,21 @@ var showLogCheckbox = document.getElementById("show-log");
 showLogCheckbox.onchange = displayLog;
 
 var codeMirrorDiv = document.getElementById("code-mirror");
-var warpId = getWarpId();
-var code = load( warpId );
+var code = "";
+var warpStruct = getWarpStruct();
+
+if ( warpStruct !== undefined )
+    load( warpStruct ).then( loadResult );
+else {
+    warpStruct = makeWarpStruct();
+    setLocation( warpStruct );
+    // Probbly should just have a default ID to fetch
+    code = 'colors  = [ "LightCoral", "Plum", "SeaGreen" ];\nthreads = [ ];\n\nfor (var i = 0; i < 100; i++ )\n  for ( var j = 0 ; j < 3 ; j++ )\n    threads.push(j);';
+
+}
+
 
 var captainsLog = document.getElementById("captains-log");
-
-if ( code === null )
-    code = 'colors  = [ "LightCoral", "Plum", "SeaGreen" ];\nthreads = [ ];\n\nfor (var i = 0; i < 100; i++ )\n  for ( var j = 0 ; j < 3 ; j++ )\n    threads.push(j);';
 
 var editor = CodeMirror( codeMirrorDiv, {
     value : code,
@@ -39,9 +49,13 @@ var editor = CodeMirror( codeMirrorDiv, {
 });
 
 setTimeout(resizeEditor, 0);
-draw();
 window.onresize = resizeEditor;
 
+
+function loadResult ( data ) {
+    editor.setValue( data.Data );
+    draw();
+}
 
 function resizeEditor () {
     var editor = document.querySelector(".CodeMirror");
@@ -50,41 +64,164 @@ function resizeEditor () {
     editor.style.height = (window.innerHeight - editorPosition.top - bodyMargin) + "px";
 }
 
-function getWarpId ( ) {
-    var warpId = location.hash;
-
-    if ( warpId !== '' )
-	warpId = warpId.slice(1);
-    else {
-	warpId = makeWarpId();
-	location.hash = warpId;
-    }
-
-    return warpId;
+function setLocation ( warpStruct ) {
+    var encodedKey = encodeKey( warpStruct.key );
+    location.hash = warpStruct.mode + ":" + encodedKey;
 }
 
-function makeWarpId ( ) {
-    var buf = new Uint8Array(16);
-    window.crypto.getRandomValues(buf);
-    return "edit:" + btoa( uint8ToString( buf ) ).slice(0,-2);
+function getWarpStruct ( ) {
+
+    if ( location.hash == '' )
+	return undefined;
+
+    var warpCap = location.hash.slice(1);
+
+    var parts = warpCap.split(":");
+    
+    var mode = parts[0];
+    var key  = decodeKey( parts[1] );
+
+    var warpStruct = {
+	key  : key,
+	mode : mode,
+    };
+
+    return warpStruct;
 }
 
-function uint8ToString ( u8a ) {
-  var CHUNK_SZ = 0x8000;
-  var c        = [];
+function decodeKey ( encodedKey ) {
+    var keyBytes = atob( encodedKey );
+    var keyBuf   = stringToUint8( keyBytes );
+
+    return keyBuf;
+}
+
+function encodeKey ( keyBuf ) {
+    var keyBytes   = uint8ToString( keyBuf );
+    var encodedKey =  btoa( keyBytes );
+
+    return encodedKey;
+}
+
+function makeWarpStruct ( ) {
+    var buf        = new ArrayBuffer( KEY_LENGHT );
+    var uint8Array = new Uint8Array( buf );
+    
+    window.crypto.getRandomValues( uint8Array );
+
+    var warpStruct = {
+	mode : "edit",
+	key  : buf,
+    };
+
+    return warpStruct;
+}
+
+function stringToUint8 ( str ) {
+  var buf     = new ArrayBuffer ( str.length );
+  var bufView = new Uint8Array ( buf );
+
+    for ( var i=0 ; i < str.length ; i++ )
+	bufView[i] = str.charCodeAt(i);
+ 
+  return buf;
+}
+
+function uint8ToString ( buf ) {
+    var u8a = new Uint8Array( buf );
+    var CHUNK_SZ = 0x8000;
+    var c        = [];
 
     for ( var i=0 ; i < u8a.length ; i+=CHUNK_SZ ) {
-    c.push( String.fromCharCode.apply( null, u8a.subarray( i, i+CHUNK_SZ ) ) );
-  }
-  return c.join("");
+	c.push( String.fromCharCode.apply( null, u8a.subarray( i, i+CHUNK_SZ ) ) );
+    }
+    
+    return c.join("");
 }
 
-function save ( warpId, code ) {
-    localStorage.setItem( warpId, code );
+function editToGetKey ( key ) {
+    return crypto.subtle.digest( "SHA-256", key )
+	.then( function ( hash ) {
+	    return hash.slice( 0, KEY_LENGHT );
+	});
 }
 
-function load ( warpId ) {
-    return localStorage.getItem( warpId );
+function save ( warpStruct, code ) {
+
+    if ( warpStruct.mode !== 'edit' )
+	return;
+    
+    var preimage  = warpStruct.key;
+    editToGetKey( preimage )
+	.then( function ( key ) {
+
+	    var url = "/set";
+	
+	    var request = {
+		Preimage : encodeKey( preimage ),
+		Key      : encodeKey( key ),
+		DataType : "JavaScript",
+		Data     : code,
+	    }
+
+	    console.log( "share: read:%s", request.Key ); //BOOG
+	    
+	    fetch(url, {  
+		method: 'post',  
+		headers: {  
+		    "Content-type": "application/json; charset=UTF-8"  
+		},  
+		body: JSON.stringify(request)
+	    })
+		.then(json)  
+		.then(function (data) {  
+		    console.log('Request succeeded with JSON response', data);  
+		})  
+		.catch(function (error) {  
+		    console.log('Request failed', error);  
+		});
+
+	    function json(response) {  
+		return response.json()  
+	    } 
+	});
+}
+
+function load ( warpStruct ) {
+ 
+    var url = "/get";
+
+    var result;
+
+    if ( warpStruct.mode === 'edit' )
+	result = editToGetKey( warpStruct.key )
+	.then( doLoad );
+
+    else {
+	result = doLoad( warpStruct.key );
+    }
+
+    return result;
+
+    function doLoad ( loadKey ) {
+	var request = {
+	    Key : encodeKey( loadKey ),
+	}
+
+
+	return fetch(url, {  
+	    method: 'post',  
+	    headers: {  
+		"Content-type": "application/json; charset=UTF-8"  
+	    },  
+	    body: JSON.stringify(request) })
+	    .then(json);  
+	
+	function json(response) {  
+	    return response.json()  
+	}
+    }
+    
 }
 
 function draw () {
@@ -94,7 +231,7 @@ function draw () {
 
     eval( code );
 
-    save( warpId, code );
+    save( warpStruct, code );
     
     canvas.width = threads.length;
     

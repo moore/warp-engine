@@ -5,8 +5,11 @@
 package main
 
 import (
+	"bytes"
 	"net/http"
 	"encoding/json"
+	"crypto/sha256"
+	"encoding/base64"
 	"appengine"
 	"appengine/datastore"
 )
@@ -52,8 +55,30 @@ func handleSet(writer http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
+	preimageBytes, err := base64.StdEncoding.DecodeString( setWarp.Preimage );
+
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	keyBytes, err := base64.StdEncoding.DecodeString( setWarp.Key );
+
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	computedKeyBytes := sha256.Sum256(preimageBytes)
+
+	if bytes.Equal(keyBytes, computedKeyBytes[:15] ) != true {
+		http.Error(writer, "key != computed", http.StatusInternalServerError)
+		return
+	}
+	
 	warp := Warp {
 		Key   : setWarp.Key,
 		DataType : "JavaScript",
@@ -89,7 +114,7 @@ func handleGet(writer http.ResponseWriter, req *http.Request) {
 
 	var warp Warp
 
-	key := datastore.NewKey(context, "Warp", warp.Key, 0, nil)
+	key := datastore.NewKey(context, "Warp", getWarp.Key, 0, nil)
 
 	getErr := datastore.Get(context, key, &warp);
 
