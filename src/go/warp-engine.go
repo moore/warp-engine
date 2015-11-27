@@ -61,12 +61,16 @@ func handleSet(writer http.ResponseWriter, req *http.Request) {
 	}
 	
 
-	_, getErr := datastore.Put(context, datastore.NewIncompleteKey(context, warp.Key, nil), &warp)
+	key := datastore.NewKey(context, "Warp", warp.Key, 0, nil)
+	_, getErr := datastore.Put(context, key, &warp)
 
 	if err != nil {
 		http.Error(writer, getErr.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	result := "{result:\"ok\"}";
+	writer.Write([]byte(result))
 
 }
 
@@ -84,8 +88,10 @@ func handleGet(writer http.ResponseWriter, req *http.Request) {
 	}
 
 	var warp Warp
-	
-	getErr := datastore.Get(context, datastore.NewIncompleteKey(context, getWarp.Key, nil), &warp);
+
+	key := datastore.NewKey(context, "Warp", warp.Key, 0, nil)
+
+	getErr := datastore.Get(context, key, &warp);
 
 	if err != nil {
 		http.Error(writer, getErr.Error(), http.StatusInternalServerError)
