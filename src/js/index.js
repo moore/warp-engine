@@ -1,4 +1,4 @@
-var KEY_LENGHT = 15;
+var KEY_LENGTH = 15;
 
 var codeOutput = document.getElementById("code-output");
 
@@ -8,7 +8,6 @@ var ctx = canvas.getContext("2d");
 var palette = document.getElementById("color-palette");
 var warpEnds = document.getElementById("warp-ends");
 
-var threadWidth = 1;
 var threads = [];
 var colors  = [];
 
@@ -35,7 +34,6 @@ else {
     setLocation( warpStruct );
     // Probbly should just have a default ID to fetch
     code = 'colors  = [ "LightCoral", "Plum", "SeaGreen" ];\nthreads = [ ];\n\nfor (var i = 0; i < 100; i++ )\n  for ( var j = 0 ; j < 3 ; j++ )\n    threads.push(j);';
-
 }
 
 
@@ -51,7 +49,11 @@ var editor = CodeMirror( codeMirrorDiv, {
 setTimeout(resizeEditor, 0);
 window.onresize = resizeEditor;
 
+draw();
 
+// FUNCTION DELCARATIONS
+//
+//
 function loadResult ( data ) {
     editor.setValue( data.Data );
     draw();
@@ -104,7 +106,7 @@ function encodeKey ( keyBuf ) {
 }
 
 function makeWarpStruct ( ) {
-    var buf        = new ArrayBuffer( KEY_LENGHT );
+    var buf        = new ArrayBuffer( KEY_LENGTH );
     var uint8Array = new Uint8Array( buf );
     
     window.crypto.getRandomValues( uint8Array );
@@ -142,7 +144,7 @@ function uint8ToString ( buf ) {
 function editToGetKey ( key ) {
     return crypto.subtle.digest( "SHA-256", key )
 	.then( function ( hash ) {
-	    return hash.slice( 0, KEY_LENGHT );
+	    return hash.slice( 0, KEY_LENGTH );
 	});
 }
 
@@ -225,6 +227,7 @@ function load ( warpStruct ) {
 }
 
 function draw () {
+
     var code = editor.getValue();
 
     captainsLog.value = "";
@@ -232,8 +235,21 @@ function draw () {
     eval( code );
 
     save( warpStruct, code );
-    
-    canvas.width = threads.length;
+  
+    var threadWidth;
+    var warpWidth;
+
+    if (threads.length === 0) {
+        warpWidth = 400;
+    } else if (threads.length < 400) {
+        threadWidth = Math.ceil(400 / threads.length);
+        warpWidth = threadWidth * threads.length;
+    } else {
+        threadWidth = 1;
+        warpWidth = threads.length;
+    }
+
+    canvas.width = warpWidth;
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -243,8 +259,8 @@ function draw () {
         ctx.fillStyle = colors[ threads[ i ] ];
         ctx.fillRect( offset, 0, threadWidth, canvas.height );
     }                 
-
-    codeOutput.style.width = ((threads.length + 2) + "px");
+    
+    codeOutput.style.width = ((warpWidth + 2) + "px");
     updateWarpCount();
     buildPalette();
 }
@@ -322,6 +338,9 @@ function displayLog () {
     resizeEditor();
 }
 
+// BUILT IN FUNCTIONS
+//
+//
 function log (text) {
     captainsLog.value += text + "\n";
 }
