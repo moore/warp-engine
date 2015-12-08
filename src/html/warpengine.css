@@ -99,3 +99,9 @@ div.color-swatch {
     height: 100px;
     display: none;
 }
+
+.sandbox {
+    border : 0;
+    width  : 0px;
+    height : 0px;
+}

@@ -1,3 +1,4 @@
+CWD               :=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 DIST              := dist
 HTDOCS            := htdocs
 GO_DIR            := src/go
@@ -53,6 +54,7 @@ ${HTDOCS}: js
 	cp lib/js/codemirror-5.8/mode/javascript/javascript.js ${HTDOCS}/lib/codemirror-javascript-mode.js
 	cp lib/js/codemirror-5.8/keymap/* ${HTDOCS}/lib/keymap/
 	cp ${OUT_FILE} ${OUT_FILE}.map ${HTDOCS}
+	cp ${JS_DIR}/worker.js ${HTDOCS}
 	cp -r ${HTML_DIR}/* ${HTDOCS}
 
 minify : js

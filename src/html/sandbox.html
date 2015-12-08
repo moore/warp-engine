@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Warp Engine JavaScript Execution Sandbox</title>
+  </head>
+  <body>
+    <script>
+      window.addEventListener("message", receiveMessage, false);
+
+      var worker = undefined;
+      var code   = undefined;
+      var done   = true;
+      
+      function receiveMessage( event ) {
+        var mainWindow = event.source;
+
+        if ( done !== true ) {
+          worker.terminate();
+          worker = undefined;
+          code   = undefined;
+          done   = true;
+        }
+      
+        var worker = new Worker( "worker.js" );
+        done       = false;
+      
+        worker.onmessage = function ( message ) {
+          done = true;
+          var result = message.data;
+          result.code = event.data;
+          mainWindow.postMessage( message.data, event.origin );
+        };
+
+        worker.postMessage( event.data );
+
+        setTimeout( function ( ) {
+          if ( done === true )
+            return;
+      
+            worker.terminate();
+            done = true;
+            mainWindow.postMessage( { error : 'timeout exceeded' }, event.origin );
+      
+        }, 1000 );
+      }
+      
+      document.body.innerText += "Sandbox Loaded";
+    </script>
+  </body>
+</html>

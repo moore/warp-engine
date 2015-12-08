@@ -127,6 +127,11 @@ function initIde ( root, warpDisplay ) {
     var showLogCheckbox = root.getElementById("show-log");
     showLogCheckbox.onchange = displayLog;
 
+    
+    var sandbox = root.querySelector( ".sandbox" );
+
+    initSandbox( sandbox );
+    
     var codeMirrorDiv = root.getElementById("code-mirror");
     var code = "";
     var warpStruct = getWarpStruct();
@@ -158,22 +163,55 @@ function initIde ( root, warpDisplay ) {
 
     return ide;
 
+    function initSandbox ( sandbox ) {
+
+	window.addEventListener('message',
+          function (event) {
+	      // Sandboxed iframes which lack the 'allow-same-origin'
+	      // header have "null" rather than a valid origin. This means you still
+	      // have to be careful about accepting data via the messaging API you
+	      // create. Check that source, and validate those inputs!
+	      if (event.source === sandbox.contentWindow) {
+
+		  var result = event.data;
+
+		  if ( result.error !== undefined ) 
+		      captainsLogElm.value = result.error;
+
+		  else {
+		      warpStruct.threads   = result.threads;
+		      warpStruct.colors    = result.colors;
+		      captainsLogElm.value = result.captainsLog;
+
+		      var code = result.code;
+		      
+		      save( warpStruct, code );
+		      warpDisplay.draw( warpStruct );
+		  }
+	      }
+	  });
+    }
+    
     function drawWarp ( ) {
 	var code = editor.getValue();
 
 	captainsLog = "";
 	var threads = [];
 	var colors  = [];
-	
+
+	sandbox.contentWindow.postMessage(code, "*");
+
+	/*
 	eval( code );
 
-	warpStruct.threads = threads;
-	warpStruct.colors  = colors;
+	warpStruct.threads   = threads;
+	warpStruct.colors    = colors;
 	captainsLogElm.value = captainsLog;
 	
 	save( warpStruct, code );
 	
 	warpDisplay.draw( warpStruct );
+	*/
     }
     
     function loadResult ( data ) {
