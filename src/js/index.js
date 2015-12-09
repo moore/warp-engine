@@ -4,6 +4,28 @@ var KEY_LENGTH = 15;
 var warpDisplay = initWarpDispaly( document );
 var ide         = initIde( document, warpDisplay );
 
+var menu = initMenu( document, ide );
+
+function initMenu ( root, ide ) {
+    var fOpenButton  = root.querySelector( ".side-menu-open" );
+    var fCloseButton = root.querySelector( ".side-menu-close" );
+    var fSideMenu    = root.querySelector( ".side-menu" );
+
+    fOpenButton.onclick  = handleOpen;
+    fCloseButton.onclick = handleClose;
+
+    return {};
+
+    function handleOpen ( ) {
+	fSideMenu.classList.add( 'open-state' );
+    }
+
+    function handleClose ( ) {
+	fSideMenu.classList.remove( 'open-state' );
+    }
+    
+}
+
 function initWarpDispaly ( root ) {
     
     var container = root.getElementById("code-output");
