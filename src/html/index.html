@@ -10,11 +10,19 @@
   <body>
     <div class="side-menu">
       <div class="side-menu-header">
-	<div class="close-button side-menu-close">
+          <span class="title">menu</span>
+        <div class="close-button side-menu-close">
           <span class="close-top"></span>
           <span class="close-bot"></span>
-	</div>
+        </div>
       </div>
+    <label>text editor:
+    <select name="editor mode" id="editor-mode">
+        <option value="vim" selected>vim</option>
+        <option value="default">default</option> 
+    </select>
+    </label>
+
     </div>
       <div class="burger-button side-menu-open">
         <span class="burger-top"></span>
@@ -41,19 +49,12 @@
             </select>
             </label>
 
-            <label>text editor:
-            <select name="editor mode" id="editor-mode">
-                <option value="vim" selected>vim</option>
-                <option value="default">default</option> 
-            </select>
-            </label>
-
             <input type="checkbox" id="show-log">show log</input>
         </div>
 
         <textarea id="captains-log" readonly></textarea>
         <div id="code-mirror"></div>
-	<iframe class="sandbox"  sandbox="allow-scripts allow-same-origin" src="sandbox.html"></iframe>
+    <iframe class="sandbox"  sandbox="allow-scripts allow-same-origin" src="sandbox.html"></iframe>
     </div>
 
     <script src="warp-engine.js">

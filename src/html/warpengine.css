@@ -9,12 +9,15 @@ body {
     padding: 20px 60px;
 }
 
-#toolbar {
-	width: 100%;
-	margin-bottom: 5px;
+#toolbar, .side-menu {
 	font-family: monospace; 
 	font-size: 12px; 
 	color: #666666; 
+}
+
+#toolbar {
+	width: 100%;
+	margin-bottom: 5px;
 }
 
 button, select {
@@ -111,9 +114,19 @@ div.color-swatch {
 
 .side-menu.open-state {
     left : 0px;
+    padding-left: 10px;
 }
 
+.side-menu-header {
+    font-size: 32px;
+    overflow: hidden;
+    margin: 20px 0;
+}
 
+.side-menu-header .title{
+    float: left;
+    margin-top: -5px;
+}
 
 .side-menu {
     position    : absolute ;
@@ -126,9 +139,9 @@ div.color-swatch {
 }
 
 .close-button.side-menu-close {
-    float  : right;
-    border : none;
-    margin : 20px 10px;
+    float        : right;
+    border       : none;
+    margin-right : 10px;
 }
 
 .burger-button {
@@ -170,7 +183,6 @@ div.color-swatch {
     position : relative;
     height   : 28px;
     width    : 36px;
-    margin   : 5px;
 }
 
 .close-top,
