@@ -6,6 +6,7 @@ body {
 #code-output {
 	margin-left: auto;
 	margin-right: auto;
+    padding: 20px 60px;
 }
 
 #toolbar {
@@ -115,34 +116,27 @@ div.color-swatch {
 
 
 .side-menu {
-    position   : absolute ;
-    height     : 100% ;
-    border     : 1px solid rgba(0, 0, 0, 0.23);
-    z-index    : 100;
-    background : white;
-    width      : 200px;
-    left       : -200px;
+    position    : absolute ;
+    height      : 100% ;
+    border-right: 1px solid #cccccc;
+    z-index     : 100;
+    background  : white;
+    width       : 200px;
+    left        : -200px;
 }
-
-.side-menu-headder {
-    font-size      : 24pt;
-    padding-left   : 10px;
-    background     : rgba(0, 0, 0, 0.04);
-    padding-bottom : 5px;
-}
-
 
 .close-button.side-menu-close {
     float  : right;
     border : none;
+    margin : 20px 10px;
 }
 
 .burger-button {
     display  : inline-block;
-    position : relative;
+    position : absolute;
     height   : 28px;
     width    : 36px;
-    margin   : 5px;
+    margin   : 20px 10px;
 }
 
 .burger-top,
@@ -153,7 +147,7 @@ div.color-swatch {
   height: 4px;
   width: 36px;
   border-radius: 2px;
-  background: black;
+  background: #999999;
 }
 
 .burger-top {
@@ -186,7 +180,7 @@ div.color-swatch {
   height: 4px;
   width: 36px;
   border-radius: 2px;
-  background: black;
+  background: #999999;
 }
 
 .close-top {
