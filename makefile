@@ -38,7 +38,7 @@ dev-app: prep
 	cd ${GO_HOME} && goapp serve
 
 deploy : prep
-	cd ${GO_HOME} && goapp deploy -application warp-9
+	cd ${GO_HOME} && goapp deploy -application engine-room
 
 ${BUILD_JS_DIR}:
 	mkdir -p ${BUILD_JS_DIR}

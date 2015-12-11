@@ -33,6 +33,7 @@ type SetWarp struct {
 	Data     string
 }
 
+
 type GetWarp struct {
 	Key string
 }
@@ -40,7 +41,7 @@ type GetWarp struct {
 type Warp struct {
 	Key      string
 	DataType string
-	Data     string
+	Data     string `datastore:",noindex"`
 }
 
 
@@ -93,8 +94,8 @@ func handleSet(writer http.ResponseWriter, req *http.Request) {
 		http.Error(writer, getErr.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	result := "{result:\"ok\"}";
+ 
+	result := "{\"result\":\"ok\"}"
 	writer.Write([]byte(result))
 
 }
