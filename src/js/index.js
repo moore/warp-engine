@@ -6,25 +6,6 @@ var ide         = initIde( document, warpDisplay );
 
 var menu = initMenu( document, ide );
 
-function initMenu ( root, ide ) {
-    var fOpenButton  = root.querySelector( ".side-menu-open" );
-    var fCloseButton = root.querySelector( ".side-menu-close" );
-    var fSideMenu    = root.querySelector( ".side-menu" );
-
-    fOpenButton.onclick  = handleOpen;
-    fCloseButton.onclick = handleClose;
-
-    return {};
-
-    function handleOpen ( ) {
-	fSideMenu.classList.add( 'open-state' );
-    }
-
-    function handleClose ( ) {
-	fSideMenu.classList.remove( 'open-state' );
-    }
-    
-}
 
 function initWarpDispaly ( root ) {
     
@@ -134,6 +115,7 @@ function initWarpDispaly ( root ) {
 function initIde ( root, warpDisplay ) {
 
     var ide = {
+	setEditorMode : setEditorMode,
 
     };
 
@@ -143,8 +125,6 @@ function initIde ( root, warpDisplay ) {
     var paletteModeSelector = root.getElementById("palette-mode");
     paletteModeSelector.onchange = paletteModeSelect;
 
-    var editorSelector = root.getElementById("editor-mode");
-    editorSelector.onchange = editorSelect;
 
     var showLogCheckbox = root.getElementById("show-log");
     showLogCheckbox.onchange = displayLog;
@@ -246,8 +226,7 @@ function initIde ( root, warpDisplay ) {
 	warpDisplay.setPaletMode( paletteModeSelector.value );
     }
 
-    function editorSelect () {
-	var mode = editorSelector.value;
+    function setEditorMode ( mode ) {
 	if (mode === "vim") {
             editor.setOption("keyMap", "vim");
 	} else {
@@ -436,3 +415,33 @@ function initIde ( root, warpDisplay ) {
 
     
 }
+
+
+function initMenu ( root, ide ) {
+    var fOpenButton     = root.querySelector( ".side-menu-open" );
+    var fCloseButton    = root.querySelector( ".side-menu-close" );
+    var fSideMenu       = root.querySelector( ".side-menu" );
+    var fEditorSelector = root.getElementById("editor-mode");
+
+    fOpenButton.onclick      = handleOpen;
+    fCloseButton.onclick     = handleClose;
+    fEditorSelector.onchange = editorSelect;
+
+
+    return {};
+
+    function handleOpen ( ) {
+	fSideMenu.classList.add( 'open-state' );
+    }
+
+    function handleClose ( ) {
+	fSideMenu.classList.remove( 'open-state' );
+    }
+    
+    function editorSelect () {
+	var mode = fEditorSelector.value;
+	ide.setEditorMode( mode );
+    }
+
+}
+
