@@ -1,11 +1,29 @@
 var KEY_LENGTH = 15;
 
+var app = AppFactory( document );
 
-var warpDisplay = initWarpDispaly( document );
-var ide         = initIde( document, warpDisplay );
 
-var menu = initMenu( document, ide );
+/////// App Module //////
+function AppFactory ( root ) {
+    return initApp( root );
+}
 
+function initApp ( root ) {
+    var fCapString = location.hash.slice(1);
+
+    var fCap         = CapFactory( fCapString );
+    var fWarpDisplay = initWarpDispaly( root );
+    var fStore       = initStore( );
+    var fIde         = initIde( root, fCap, fStore, fWarpDisplay );
+
+    var fMenu = initMenu( root, fIde );
+
+    var self = {};
+
+    return self;
+}
+
+///// Warp Moudle ///////
 
 function initWarpDispaly ( root ) {
     
@@ -112,7 +130,9 @@ function initWarpDispaly ( root ) {
 }
 
 
-function initIde ( root, warpDisplay ) {
+/////// Ide Module /////////
+
+function initIde ( root, fCap, fStore, warpDisplay ) {
 
     var ide = {
 	setEditorMode : setEditorMode,
@@ -136,17 +156,8 @@ function initIde ( root, warpDisplay ) {
     
     var codeMirrorDiv = root.getElementById("code-mirror");
     var code = "";
-    var warpStruct = getWarpStruct();
 
-    if ( warpStruct !== undefined )
-	load( warpStruct ).then( loadResult );
-    else {
-	warpStruct = makeWarpStruct();
-	setLocation( warpStruct );
-	// Probbly should just have a default ID to fetch
-	code = 'colors  = [ "LightCoral", "Plum", "SeaGreen" ];\nthreads = [ ];\n\nfor (var i = 0; i < 100; i++ )\n  for ( var j = 0 ; j < 3 ; j++ )\n    threads.push(j);';
-}
-
+    fStore.load( fCap ).then( loadResult );
 
     var captainsLogElm = root.getElementById("captains-log");
 
@@ -160,8 +171,10 @@ function initIde ( root, warpDisplay ) {
     setTimeout(resizeEditor, 0);
     window.onresize = resizeEditor;
 
-    drawWarp( );
-
+    var warpStruct = {
+	threads : [],
+	colors  : [],
+    };
 
     return ide;
 
@@ -187,7 +200,7 @@ function initIde ( root, warpDisplay ) {
 
 		      var code = result.code;
 		      
-		      save( warpStruct, code );
+		      fStore.save( fCap, code );
 		      warpDisplay.draw( warpStruct );
 		  }
 	      }
@@ -202,18 +215,6 @@ function initIde ( root, warpDisplay ) {
 	var colors  = [];
 
 	sandbox.contentWindow.postMessage(code, "*");
-
-	/*
-	eval( code );
-
-	warpStruct.threads   = threads;
-	warpStruct.colors    = colors;
-	captainsLogElm.value = captainsLog;
-	
-	save( warpStruct, code );
-	
-	warpDisplay.draw( warpStruct );
-	*/
     }
     
     function loadResult ( data ) {
@@ -257,105 +258,38 @@ function initIde ( root, warpDisplay ) {
 	var encodedKey = encodeKey( warpStruct.key );
 	location.hash = warpStruct.mode + ":" + encodedKey;
     }
+}
 
-    function getWarpStruct ( ) {
+function initStore ( ) {
 
-	if ( location.hash == '' )
-	    return undefined;
+    var store = {
+	save : save,
+	load : load,
+    };
 
-	var warpCap = location.hash.slice(1);
+    return store;
 
-	var parts = warpCap.split(":");
+
+    function save ( cap, code ) {
 	
-	var mode = parts[0];
-	var key  = decodeKey( parts[1] );
-
-	var warpStruct = {
-	    key  : key,
-	    mode : mode,
-	};
-
-	return warpStruct;
-    }
-
-    function decodeKey ( encodedKey ) {
-	var keyBytes = atob( encodedKey );
-	var keyBuf   = stringToUint8( keyBytes );
-
-	return keyBuf;
-    }
-
-    function encodeKey ( keyBuf ) {
-	var keyBytes   = uint8ToString( keyBuf );
-	var encodedKey =  btoa( keyBytes );
-
-	return encodedKey;
-    }
-
-    function makeWarpStruct ( ) {
-	var buf        = new ArrayBuffer( KEY_LENGTH );
-	var uint8Array = new Uint8Array( buf );
-	
-	window.crypto.getRandomValues( uint8Array );
-
-	var warpStruct = {
-	    mode : "edit",
-	    key  : buf,
-	};
-
-	return warpStruct;
-    }
-
-    function stringToUint8 ( str ) {
-	var buf     = new ArrayBuffer ( str.length );
-	var bufView = new Uint8Array ( buf );
-
-	for ( var i=0 ; i < str.length ; i++ )
-	    bufView[i] = str.charCodeAt(i);
-	
-	return buf;
-    }
-
-    function uint8ToString ( buf ) {
-	var u8a = new Uint8Array( buf );
-	var CHUNK_SZ = 0x8000;
-	var c        = [];
-
-	for ( var i=0 ; i < u8a.length ; i+=CHUNK_SZ ) {
-	    c.push( String.fromCharCode.apply( null, u8a.subarray( i, i+CHUNK_SZ ) ) );
-	}
-	
-	return c.join("");
-    }
-
-    function editToGetKey ( key ) {
-	return crypto.subtle.digest( "SHA-256", key )
-	    .then( function ( hash ) {
-		return hash.slice( 0, KEY_LENGTH );
-	    });
-    }
-
-    function save ( warpStruct, code ) {
-	
-	if ( warpStruct.mode !== 'edit' )
+	if ( cap.getMode() !== 'edit' )
 	    return;
 	
-	var preimage  = warpStruct.key;
-	editToGetKey( preimage )
-	    .then( function ( key ) {
+	cap.toRead()
+	    .then( function ( readCap ) {
+		var preimage  = cap.getKey();
+		var key       = readCap.getKey();
 
 		var url = "/set";
 		
 		var request = {
-		    Preimage : encodeKey( preimage ),
-		    Key      : encodeKey( key ),
+		    Preimage : preimage,
+		    Key      : key,
 		    DataType : "JavaScript",
 		    Data     : code,
 		}
 
-		console.log( "share: read:%s", request.Key ); //BOOG
-		
-		fetch(url, {  
+		return fetch(url, {  
 		    method: 'post',  
 		    headers: {  
 			"Content-type": "application/json; charset=UTF-8"  
@@ -364,10 +298,11 @@ function initIde ( root, warpDisplay ) {
 		})
 		    .then(json)  
 		    .then(function (data) {  
-			console.log('Request succeeded with JSON response', data);  
+			return Promise.resolve( data );
 		    })  
 		    .catch(function (error) {  
-			console.log('Request failed', error);  
+			console.log('Request failed', error);
+			return Promise.reject( undefined );
 		    });
 
 		function json(response) {  
@@ -376,25 +311,25 @@ function initIde ( root, warpDisplay ) {
 	    });
     }
 
-    function load ( warpStruct ) {
+    function load ( cap ) {
 	
 	var url = "/get";
 
 	var result;
 
-	if ( warpStruct.mode === 'edit' )
-	    result = editToGetKey( warpStruct.key )
-	    .then( doLoad );
+	if ( cap.getMode() === 'edit' )
+	    result = cap.toRead()
+	      .then( doLoad );
 
 	else {
-	    result = doLoad( warpStruct.key );
+	    result = doLoad( cap );
 	}
 
 	return result;
 
-	function doLoad ( loadKey ) {
+	function doLoad ( readCap ) {
 	    var request = {
-		Key : encodeKey( loadKey ),
+		Key : readCap.getKey(),
 	    }
 
 
@@ -414,7 +349,9 @@ function initIde ( root, warpDisplay ) {
     }
 
     
+
 }
+
 
 
 function initMenu ( root, ide ) {
@@ -445,3 +382,134 @@ function initMenu ( root, ide ) {
 
 }
 
+///////// future Cap module //////////////
+function CapFactory ( capString ) {
+    var fCapStruct
+    
+    if ( capString === undefined )
+	fCapStruct = makeCap();
+
+    else
+	fCapStruct = parseCap( capString );
+
+    if ( fCapStruct === undefined )
+	return undefined;
+
+    return initCap( fCapStruct );
+}
+
+function initCap ( fCapStruct ) {
+
+    var self = {
+	toRead    : toRead,
+	getKey    : getKey,
+	getMode   : getMode,
+	toString  : toString,
+    }
+
+    return  self;
+    
+    function toRead ( ) {
+	if ( fCapStruct.mode === 'read' )
+	    return Promise.resolve( self );
+
+	return editToGetKey( fCapStruct.key ).then( function ( readKey ) {
+	    return Promise.resolve( initCap( { mode : 'read', key : readKey } ) );
+	});
+    }
+
+    function getKey ( ) {
+	return encodeKey( fCapStruct.key );
+    }
+
+    function getMode ( ) {
+	return fCapStruct.mode;
+    }
+
+    function toString ( ) {
+	return fCapStruct.mode + ":" + encodeKey( fCapStruct.key );
+    }
+    
+}
+
+function parseCap ( capString ) {
+
+    var parts = capString.split(":");
+    
+    if ( parts.length !== 2 )
+	return undefined;
+
+    var mode = parts[0];
+
+    if ( mode !== 'read' && mode !== 'edit' )
+	return undefined;
+
+    var key  = decodeKey( parts[1] );
+
+    if ( key.byteLength !== KEY_LENGTH )
+	return undefined
+
+    var cap = {
+	key  : key,
+	mode : mode,
+    };
+
+    return cap;
+}
+
+function decodeKey ( encodedKey ) {
+    var keyBytes = atob( encodedKey );
+    var keyBuf   = stringToUint8( keyBytes );
+
+    return keyBuf;
+}
+
+function encodeKey ( keyBuf ) {
+    var keyBytes   = uint8ToString( keyBuf );
+    var encodedKey = btoa( keyBytes );
+
+    return encodedKey;
+}
+
+function makeCap ( ) {
+    var buf        = new ArrayBuffer( KEY_LENGTH );
+    var uint8Array = new Uint8Array( buf );
+    
+    window.crypto.getRandomValues( uint8Array );
+
+    var cap = {
+	mode : "edit",
+	key  : buf,
+    };
+
+    return cap;
+}
+
+function stringToUint8 ( str ) {
+    var buf     = new ArrayBuffer ( str.length );
+    var bufView = new Uint8Array ( buf );
+
+    for ( var i=0 ; i < str.length ; i++ )
+	bufView[i] = str.charCodeAt(i);
+    
+    return buf;
+}
+
+function uint8ToString ( buf ) {
+    var u8a = new Uint8Array( buf );
+    var CHUNK_SZ = 0x8000;
+    var c        = [];
+
+    for ( var i=0 ; i < u8a.length ; i+=CHUNK_SZ ) {
+	c.push( String.fromCharCode.apply( null, u8a.subarray( i, i+CHUNK_SZ ) ) );
+    }
+    
+    return c.join("");
+}
+
+function editToGetKey ( key ) {
+    return crypto.subtle.digest( "SHA-256", key )
+	.then( function ( hash ) {
+	    return Promise.resolve( hash.slice( 0, KEY_LENGTH ) );
+	});
+}
