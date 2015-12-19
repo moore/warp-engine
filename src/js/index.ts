@@ -1,9 +1,13 @@
-var KEY_LENGTH = 15;
+/// <reference path="typings/codemirror/codemirror.d.ts" />
+/// <reference path="typings/whatwg-fetch/whatwg-fetch.d.ts" />
+/// <reference path="./Cap.ts" />
+
 
 var app = AppFactory( document );
 
 
 /////// App Module //////
+
 function AppFactory ( root ) {
     return initApp( root );
 }
@@ -11,7 +15,7 @@ function AppFactory ( root ) {
 function initApp ( root ) {
     var fCapString = location.hash.slice(1);
 
-    var fCap         = CapFactory( fCapString );
+    var fCap         = Cap.CapFactory( fCapString );
     var fWarpDisplay = initWarpDispaly( root );
     var fStore       = initStore( );
     var fIde         = initIde( root, fCap, fStore, fWarpDisplay );
@@ -95,7 +99,7 @@ function initWarpDispaly ( root ) {
 	for (var i = 0; i < colors.length; i ++) {
             
             var colorDiv = document.createElement("div");
-            var colorIndex = document.createTextNode(i);
+            var colorIndex = document.createTextNode(String(i));
             var indexSpan = document.createElement("span");
             var colorCount = document.createTextNode(colorCounts[i]);
             var countSpan = document.createElement("span");
@@ -208,17 +212,17 @@ function initIde ( root, fCap, fStore, warpDisplay ) {
     }
     
     function drawWarp ( ) {
-	var code = editor.getValue();
+	var code = editor.getDoc().getValue();
 
-	captainsLog = "";
-	var threads = [];
-	var colors  = [];
+	captainsLogElm.value = "";
+	var threads    = [];
+	var colors     = [];
 
 	sandbox.contentWindow.postMessage(code, "*");
     }
     
     function loadResult ( data ) {
-	editor.setValue( data.Data );
+	editor.getDoc().setValue( data.Data );
 	drawWarp();
     }
 
@@ -248,15 +252,14 @@ function initIde ( root, fCap, fStore, warpDisplay ) {
 
 
     function resizeEditor () {
-	var editor = document.querySelector(".CodeMirror");
+	var editor = <HTMLElement>document.querySelector(".CodeMirror");
 	var editorPosition = editor.getBoundingClientRect();
 	var bodyMargin = +(getComputedStyle(document.body).marginBottom.slice(0, -2));
 	editor.style.height = (window.innerHeight - editorPosition.top - bodyMargin) + "px";
     }
 
     function setLocation ( warpStruct ) {
-	var encodedKey = encodeKey( warpStruct.key );
-	location.hash = warpStruct.mode + ":" + encodedKey;
+	location.hash = fCap.toString();
     }
 }
 
@@ -383,6 +386,7 @@ function initMenu ( root, ide ) {
 }
 
 ///////// future Cap module //////////////
+/*
 function CapFactory ( capString ) {
     var fCapStruct
     
@@ -513,3 +517,4 @@ function editToGetKey ( key ) {
 	    return Promise.resolve( hash.slice( 0, KEY_LENGTH ) );
 	});
 }
+*/

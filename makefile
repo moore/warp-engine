@@ -3,6 +3,7 @@ DIST              := dist
 HTDOCS            := htdocs
 GO_DIR            := src/go
 JS_DIR            := src/js
+TYPE_LIBS         := typings
 HTML_DIR          := src/html
 
 GO_HOME = go-libs/
@@ -13,8 +14,8 @@ BUILD_DIR    = build
 BUILD_JS_DIR = ${BUILD_DIR}/js
 BUILD_GO_DIR = ${BUILD_DIR}/go
 
-OUT_FILE     = ${BUILD_JS_DIR}/warp-engine.js
-MIN_OUT_FILE = ${BUILD_JS_DIR}/warp-engine.min.js
+OUT_FILE     = warp-engine.js
+MIN_OUT_FILE = warp-engine.min.js
 
 .PHONY: all clean distclean 
 all:: ${HTDOCS}
@@ -43,8 +44,13 @@ deploy : prep
 ${BUILD_JS_DIR}:
 	mkdir -p ${BUILD_JS_DIR}
 
-js : ${BUILD_JS_DIR} npm
-	browserify ${JS_DIR}/index.js --debug | node_modules/exorcist/bin/exorcist.js ${OUT_FILE}.map > ${OUT_FILE}
+tsfiles = $(shell find src/js -name  '*.ts')
+
+js : ${BUILD_JS_DIR} ${tsfiles}
+	cp ${JS_DIR}/*.ts ${BUILD_JS_DIR}
+	cp -r ${TYPE_LIBS} ${BUILD_JS_DIR}
+	cd ${BUILD_JS_DIR} && tsc --sourceMap --target es5 --module commonjs --out ${OUT_FILE} index.ts
+
 
 ${HTDOCS}: js
 	mkdir -p ${HTDOCS}
@@ -53,7 +59,7 @@ ${HTDOCS}: js
 	cp lib/js/codemirror-5.8/lib/* ${HTDOCS}/lib/
 	cp lib/js/codemirror-5.8/mode/javascript/javascript.js ${HTDOCS}/lib/codemirror-javascript-mode.js
 	cp lib/js/codemirror-5.8/keymap/* ${HTDOCS}/lib/keymap/
-	cp ${OUT_FILE} ${OUT_FILE}.map ${HTDOCS}
+	cp -r ${BUILD_JS_DIR}/* ${HTDOCS}
 	cp ${JS_DIR}/worker.js ${HTDOCS}
 	cp -r ${HTML_DIR}/* ${HTDOCS}
 
