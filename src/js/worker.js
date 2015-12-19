@@ -12,6 +12,12 @@ function receiveMessage( event ) {
     captainsLog = "";
     threads = [];
     colors  = [];
+    shafts = 4;
+    treadles = 6;
+    threading = [];
+    weftThreads = [];
+    treadling = [];
+    tieup = [];
 
     try {
         eval( event.data );
@@ -75,4 +81,79 @@ function stretch ( factor, values ) {
             result.push( values[i] );
 
     return result;
+}
+
+function logWif () {
+
+    log("Version=1.1\nSource Program=WarpEngine\nSource Version=1.0\nDate=December 4, 2015\n");
+  
+    log("[CONTENTS]");
+    log("WEAVING=1");
+    log("COLOR PALETTE=1");
+    log("COLOR TABLE=1");
+    log("WARP=1");
+    log("WEFT=1");
+    log("THREADING=1");
+    log("WARP COLORS=1");
+    log("TREADLING=1");
+    log("WEFT COLORS=1");
+    log("TIEUP=1");
+    log("\n");
+
+    log("[WEAVING]");
+    log("Rising Shed=1");
+    log("Shafts=" + shafts);
+    log("Treadles=" + treadles);
+    log("\n");
+
+    log("[COLOR PALETTE]");
+    log("Entries=" + colors.length);
+    log("Range=0,255");
+    log("\n");
+
+    log("[COLOR TABLE]");
+    for (i=0; i < colors.length; i++)
+        log((i+1) + "=" + hexToRgb(colors[i]));
+    log("\n");
+
+    log("[WARP]");
+    log("Threads=" + threads.length);
+    log("\n");
+
+    log("[WEFT]");
+    log("Threads=" + treadling.length);
+    log("\n");
+
+    log("[THREADING]");
+    for (i=0; i < threading.length; i++)
+        log((i+1) + "=" + threading[i]);
+    log("\n");
+    
+    log("[WARP COLORS]");
+    for (i=0; i < threads.length; i++)
+        log((i+1) + "=" + (threads[i] + 1));
+    log("\n");
+
+    log("[TREADLING]");
+    for (i=0; i < treadling.length; i++)
+        log((i+1) + "=" + treadling[i]);
+    log("\n");
+
+    log("[WEFT COLORS]");
+    for (i=0; i < weftThreads.length; i++)
+        log((i+1) + "=" + (weftThreads[i] + 1));
+    log("\n");
+
+    log("[TIEUP]");
+    for (i=0; i < tieup.length; i++)
+        log((i+1) + "=" + tieup[i].join());
+
+}
+
+function hexToRgb(hex) {
+    var rgb = [];
+    rgb.push(parseInt(hex.slice(1,3), 16));
+    rgb.push(parseInt(hex.slice(3,5), 16));
+    rgb.push(parseInt(hex.slice(5), 16));
+    return rgb.join();
 }
