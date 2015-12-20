@@ -1,5 +1,4 @@
 module WarpDisplay  {
-    var KEY_LENGTH = 15;
 
     export interface Display {
 	draw( warp : any )         : void ;
