@@ -11,8 +11,23 @@ module App  {
     export function factory ( root : any ) : App {
 
         var fCapString = location.hash.slice(1);
+	var fCap;
 
-        var fCap         = Cap.CapFactory( fCapString );
+	if ( fCapString !== '' ) 
+            fCap = Cap.capFromString( fCapString );
+
+	else {
+	    fCap = Cap.newCap();
+	    location.hash = fCap.toString();
+	}
+
+	
+	if ( fCap === undefined ) {
+	    console.log( "could not get cap!" );
+	    return undefined;
+	}
+	    
+
         var fWarpDisplay = WarpDisplay.factory( root );
         var fStore       = Store.factory( );
         var fIde         = Ide.factory( root, fCap, fStore, fWarpDisplay );

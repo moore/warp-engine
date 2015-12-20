@@ -9,19 +9,18 @@ module Cap  {
     }
 
 
-    export function CapFactory ( capString: string ) {
-	var fCapStruct;
+    export function capFromString ( capString: string ) : Cap {
 	
-	if ( capString === undefined || capString === '')
-	    fCapStruct = makeCap();
-
-	else
-	    fCapStruct = parseCap( capString );
+	var fCapStruct = parseCap( capString );
 
 	if ( fCapStruct === undefined )
 	    return undefined;
 
 	return initCap( fCapStruct );
+    }
+
+    export function newCap ( ) : Cap {
+	return initCap( makeCap() );
     }
 
     function initCap ( fCapStruct ) {
