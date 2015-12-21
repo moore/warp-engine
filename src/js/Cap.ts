@@ -2,7 +2,7 @@ module Cap  {
     var KEY_LENGTH = 15;
 
     export interface Cap {
-	toRead()  : Cap;
+	toRead()  : Promise<Cap>;
 	getKey()  : string;
 	getMode() : string;
 	toString(): string;
@@ -34,7 +34,7 @@ module Cap  {
 
 	return  self;
 	
-	function toRead ( ) {
+	function toRead ( ) : Promise<Cap> {
 	    if ( fCapStruct.mode === 'read' )
 		return Promise.resolve( self );
 

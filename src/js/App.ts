@@ -1,7 +1,9 @@
 /// <reference path="./Cap.ts" />
 /// <reference path="./WarpDisplay.ts" />
-/// <reference path="./Ide.ts" />
 /// <reference path="./Store.ts" />
+/// <reference path="./User.ts" />
+/// <reference path="./Editor.ts" />
+/// <reference path="./Sandbox.ts" />
 module App  {
 
     export interface App {
@@ -26,19 +28,99 @@ module App  {
 	    console.log( "could not get cap!" );
 	    return undefined;
 	}
-	    
+	
+
+        var fWarpStruct = {
+            threads : [],
+            colors  : [],
+        };
 
         var fWarpDisplay = WarpDisplay.factory( root );
         var fStore       = Store.factory( );
-        var fIde         = Ide.factory( root, fCap, fStore, fWarpDisplay );
+	var fUser        = User.factory( );
+	var fEditor      = Editor.factory( root, '' );
+	var fSandbox     = Sandbox.factory( root );
 
-        var fMenu = initMenu( root, fIde );
+	fUser.addDocument( "Untitled Document", fCap );
+
+	console.log( 'History: ', fUser.getHistory() );
+
+	var fCaptainsLogElm = root.getElementById("captains-log");
+
+	initIde( );
+        initMenu( root, fEditor );
 
         var self = {};
 
         return self;
-    }
+	
 
+	function initIde ( ) {
+            fStore.load( fCap ).then( loadResult );
+
+            setTimeout(resizeEditor, 0);
+            window.onresize = resizeEditor;
+
+            var paletteModeSelector = root.getElementById("palette-mode");
+            paletteModeSelector.onchange = paletteModeSelect;
+
+
+            var showLogCheckbox = root.getElementById("show-log");
+            showLogCheckbox.onchange = displayLog;
+
+            var drawButton = root.getElementById("draw");
+            drawButton.onclick = drawWarp;
+
+	    return;
+
+            function paletteModeSelect () {
+		fWarpDisplay.setPaletMode( paletteModeSelector.value );
+            }
+
+            function displayLog () {
+		var showLog = showLogCheckbox.checked;
+		if (showLog) {
+                    fCaptainsLogElm.style.display = "block";    
+		}
+		else {
+                    fCaptainsLogElm.style.display = "none";
+		}
+		resizeEditor();
+            }
+	}
+
+
+	function loadResult ( data ) {
+            fEditor.setContents( data.Data );
+            drawWarp();
+	}
+
+	function drawWarp ( ) {
+            var code = fEditor.getContents();
+
+	    fSandbox.evaulate( code )
+		.then( function ( result: Sandbox.SandboxResult ) {
+		    fWarpDisplay.draw( result );
+		    fCaptainsLogElm.value = result.captainsLog;
+		    fStore.save( fCap, code );
+		} )
+		.catch( function ( error: Sandbox.SandboxError ) {
+		    if ( error.cancled === true )
+			console.log( "evaluation cancled becouse: '%s'", error.reason );
+		    else
+			fCaptainsLogElm.value = error.reason;
+		    
+		} );
+	}
+
+
+	function resizeEditor () {
+            var editor = <HTMLElement>document.querySelector(".CodeMirror");
+            var editorPosition = editor.getBoundingClientRect();
+            var bodyMargin = +(getComputedStyle(document.body).marginBottom.slice(0, -2));
+            editor.style.height = (window.innerHeight - editorPosition.top - bodyMargin) + "px";
+	}
+    } 
 
     function initMenu ( root, ide ) {
         var fOpenButton     = root.querySelector( ".side-menu-open" );
