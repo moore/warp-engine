@@ -34,6 +34,12 @@ module App  {
 	}
 	
 
+	// BUG: We should make this not force reload, but we
+	// will have to make sure we are reseting state properly.
+	window.onhashchange = function () {
+	    document.location.reload();
+	}
+
         var fWarpStruct = {
             threads : [],
             colors  : [],
@@ -46,10 +52,8 @@ module App  {
 
 	var fDraft : Draft.Draft;
 
-	console.log( 'History: ', fUser.getHistory() );
-
 	var fCaptainsLogElm = root.getElementById("captains-log");
-	var fTitleDiv = root.querySelector( ".draft-title" );
+	var fTitleDiv       = root.querySelector( ".draft-title" );
 
 	fTitleDiv.addEventListener("blur", function( event ) {
 	    fDraft = fDraft.setTitle( fTitleDiv.innerText );
@@ -57,7 +61,7 @@ module App  {
 	}, true);
 
 	initIde( );
-        initMenu( root, fEditor );
+        initMenu( root, fEditor, fUser );
 
         var self = {};
 
@@ -142,16 +146,18 @@ module App  {
 	}
     } 
 
-    function initMenu ( root, ide ) {
+    function initMenu ( root, editor, user ) {
         var fOpenButton     = root.querySelector( ".side-menu-open" );
         var fCloseButton    = root.querySelector( ".side-menu-close" );
         var fSideMenu       = root.querySelector( ".side-menu" );
         var fEditorSelector = root.getElementById("editor-mode");
+	var fHistory        = root.querySelector( ".history");
 
         fOpenButton.onclick      = handleOpen;
         fCloseButton.onclick     = handleClose;
         fEditorSelector.onchange = editorSelect;
 
+	updateHistory( user.getHistory() );
 
         return {};
 
@@ -165,8 +171,34 @@ module App  {
         
         function editorSelect () {
             var mode = fEditorSelector.value;
-            ide.setEditorMode( mode );
+            editor.setEditorMode( mode );
         }
 
+	function updateHistory ( history ) {
+
+	    fHistory.innerHTML = "";
+
+	    for ( let i = 0; i < history.length ; i++ )
+		fHistory.appendChild( historyEntry( history[i] ) );
+	}
+
+	function historyEntry ( data ) {
+	    let entry  = document.createElement("li");
+	    let anchor = document.createElement("a");
+	    let title  = document.createTextNode(data.title);
+	    
+	    let link = "#";
+
+	    if ( data.write.length > 0 )
+		link += data.write;
+	    else
+		link += data.read;
+
+	    anchor.href = link;
+	    anchor.appendChild( title );
+	    entry.appendChild( anchor );
+
+	    return entry;
+	}
     }
 }
