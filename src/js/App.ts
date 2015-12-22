@@ -52,7 +52,8 @@ module App  {
 	var fTitleDiv = root.querySelector( ".draft-title" );
 
 	fTitleDiv.addEventListener("blur", function( event ) {
-	    console.log( "title: '%s'", fTitleDiv.innerText );
+	    fDraft = fDraft.setTitle( fTitleDiv.innerText );
+	    save( fCap, fDraft );
 	}, true);
 
 	initIde( );
@@ -107,6 +108,12 @@ module App  {
 	    fTitleDiv.innerText = draftData.title;
 	}
 
+	function save ( fCap: Cap.Cap, fDraft: Draft.Draft ) {
+	    // BUG: we are not acutally storing js any more
+	    fStore.save( fCap, fDraft.toString() );
+	    fUser.addDocument( fDraft.getData().title, fCap );
+	}
+
 	function runCode ( ) {
             var code = fEditor.getContents();
 
@@ -115,8 +122,7 @@ module App  {
 		    fWarpDisplay.draw( result );
 		    fCaptainsLogElm.value = result.captainsLog;
 		    fDraft = fDraft.update( code, result.threads, result.colors ); 
-		    // BUG: we are not acutally storing js any more
-		    fStore.save( fCap, fDraft.toString() );
+		    save( fCap, fDraft );
 		} )
 		.catch( function ( error: Sandbox.SandboxError ) {
 		    if ( error.cancled === true )

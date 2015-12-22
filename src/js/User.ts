@@ -49,15 +49,22 @@ module User  {
 	}
 
 	function addDocumentWorker ( title: string, read: string, write: string ) : void {
+
+	    var history  = fUserRecord.history;
+
+	    let head = history[0];
+
+	    if ( head.title === title
+		 && head.read === read
+		 && head.write === write )
+		return;
+
 	    var entry: Entry =  {
 		title : title,
 		name  : "",
 		read  : read,
 		write : write,
 	    };
-
-	    var history  = fUserRecord.history;
-
 
 	    var newHistory: Array<Entry> = [ entry ];
 
