@@ -52,12 +52,14 @@ module User  {
 
 	    var history  = fUserRecord.history;
 
-	    let head = history[0];
+	    if ( history.length > 0 ) {
+		let head = history[0];
 
-	    if ( head.title === title
-		 && head.read === read
-		 && head.write === write )
-		return;
+		if ( head.title === title
+		     && head.read === read
+		     && head.write === write )
+		    return;
+	    }
 
 	    var entry: Entry =  {
 		title : title,
