@@ -40,6 +40,13 @@ button:hover {
 	background: linear-gradient(#E9E9E9 10%, #F9F9F9 100%) #E9E9E9;
 }
 
+.draft-title {
+    float       : left;
+    font-size   : 24pt;
+    margin-left : 70px;
+    margin-top  : 15px;
+}
+
 #draw {
 	margin-right: 10px;
 }

@@ -4,6 +4,7 @@
 /// <reference path="./User.ts" />
 /// <reference path="./Editor.ts" />
 /// <reference path="./Sandbox.ts" />
+/// <reference path="./Draft.ts" />
 module App  {
 
     export interface App {
@@ -12,11 +13,14 @@ module App  {
 
     export function factory ( root : any ) : App {
 
+        var fStore     = Store.factory( );
         var fCapString = location.hash.slice(1);
 	var fCap;
 
-	if ( fCapString !== '' ) 
+	if ( fCapString !== '' ) {
             fCap = Cap.capFromString( fCapString );
+	    fStore.load( fCap ).then( loadResult );
+	}
 
 	else {
 	    fCap = Cap.newCap();
@@ -36,16 +40,20 @@ module App  {
         };
 
         var fWarpDisplay = WarpDisplay.factory( root );
-        var fStore       = Store.factory( );
 	var fUser        = User.factory( );
 	var fEditor      = Editor.factory( root, '' );
 	var fSandbox     = Sandbox.factory( root );
 
-	fUser.addDocument( "Untitled Document", fCap );
+	var fDraft : Draft.Draft;
 
 	console.log( 'History: ', fUser.getHistory() );
 
 	var fCaptainsLogElm = root.getElementById("captains-log");
+	var fTitleDiv = root.querySelector( ".draft-title" );
+
+	fTitleDiv.addEventListener("blur", function( event ) {
+	    console.log( "title: '%s'", fTitleDiv.innerText );
+	}, true);
 
 	initIde( );
         initMenu( root, fEditor );
@@ -56,7 +64,6 @@ module App  {
 	
 
 	function initIde ( ) {
-            fStore.load( fCap ).then( loadResult );
 
             setTimeout(resizeEditor, 0);
             window.onresize = resizeEditor;
@@ -69,7 +76,7 @@ module App  {
             showLogCheckbox.onchange = displayLog;
 
             var drawButton = root.getElementById("draw");
-            drawButton.onclick = drawWarp;
+            drawButton.onclick = runCode;
 
 	    return;
 
@@ -91,18 +98,25 @@ module App  {
 
 
 	function loadResult ( data ) {
-            fEditor.setContents( data.Data );
-            drawWarp();
+	    fDraft = Draft.fromString( data.Data );
+	    var draftData = fDraft.getData();
+
+            fEditor.setContents( draftData.code );
+	    fWarpDisplay.draw( draftData );
+	    fUser.addDocument( draftData.title, fCap );
+	    fTitleDiv.innerText = draftData.title;
 	}
 
-	function drawWarp ( ) {
+	function runCode ( ) {
             var code = fEditor.getContents();
 
 	    fSandbox.evaulate( code )
 		.then( function ( result: Sandbox.SandboxResult ) {
 		    fWarpDisplay.draw( result );
 		    fCaptainsLogElm.value = result.captainsLog;
-		    fStore.save( fCap, code );
+		    fDraft = fDraft.update( code, result.threads, result.colors ); 
+		    // BUG: we are not acutally storing js any more
+		    fStore.save( fCap, fDraft.toString() );
 		} )
 		.catch( function ( error: Sandbox.SandboxError ) {
 		    if ( error.cancled === true )

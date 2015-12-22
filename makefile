@@ -17,8 +17,10 @@ BUILD_GO_DIR = ${BUILD_DIR}/go
 OUT_FILE     = warp-engine.js
 MIN_OUT_FILE = warp-engine.min.js
 
-.PHONY: all clean distclean 
+.PHONY: all clean distclean deps 
 all:: ${HTDOCS}
+
+deps:: npm tsd
 
 ${BUILD_GO_DIR}:
 	mkdir -p ${BUILD_GO_DIR}
@@ -75,6 +77,10 @@ server : ${HTDOCS} npm
 
 npm :
 	npm install
+
+tsd :
+	tsd install
+
 
 clean:: 
 	-rm -rf ${BUILD_DIR} ${HTDOCS} ${GO_HOME}
