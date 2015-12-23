@@ -2,7 +2,7 @@
 module User  {
 
     export interface User {
-	addDocument( title : string, cap : Cap.Cap ) : void ;
+	addDocument( title : string, cap : Cap.Cap ) :  Promise<User> ;
 	getHistory( ) : any ;
     }
 
@@ -34,15 +34,17 @@ module User  {
 	return self;
 
 
-	function addDocument ( title: string, cap: Cap.Cap ) : void {
+	function addDocument ( title: string, cap: Cap.Cap ) : Promise<User> {
 
 	    if ( cap.getMode() === 'read' ) {
 		addDocumentWorker( title, cap.toString(), "" );
+		return Promise.resolve( self );
 	    }
 
 	    else {
-		cap.toRead().then( function ( readCap ) {
+		return cap.toRead().then( function ( readCap ) {
 		    addDocumentWorker( title, readCap.toString(), cap.toString() );
+		    return Promise.resolve( self );
 		} );
 	    }
 	    

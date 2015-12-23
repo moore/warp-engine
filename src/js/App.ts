@@ -61,7 +61,9 @@ module App  {
 	}, true);
 
 	initIde( );
-        initMenu( root, fEditor, fUser );
+        var fMenu = initMenu( root, fEditor );
+
+	fMenu.updateHistory( fUser );
 
         var self = {};
 
@@ -108,14 +110,21 @@ module App  {
 
             fEditor.setContents( draftData.code );
 	    fWarpDisplay.draw( draftData );
-	    fUser.addDocument( draftData.title, fCap );
+	    fUser.addDocument( draftData.title, fCap )
+		.then( () => {
+		    fMenu.updateHistory( fUser );
+		} );
 	    fTitleDiv.innerText = draftData.title;
 	}
 
 	function save ( fCap: Cap.Cap, fDraft: Draft.Draft ) {
 	    // BUG: we are not acutally storing js any more
 	    fStore.save( fCap, fDraft.toString() );
-	    fUser.addDocument( fDraft.getData().title, fCap );
+	    fUser.addDocument( fDraft.getData().title, fCap )
+		.then( () => {
+		    fMenu.updateHistory( fUser );
+		} );
+
 	}
 
 	function runCode ( ) {
@@ -146,7 +155,7 @@ module App  {
 	}
     } 
 
-    function initMenu ( root, editor, user ) {
+    function initMenu ( root, editor ) {
         var fOpenButton     = root.querySelector( ".side-menu-open" );
         var fCloseButton    = root.querySelector( ".side-menu-close" );
         var fSideMenu       = root.querySelector( ".side-menu" );
@@ -157,9 +166,11 @@ module App  {
         fCloseButton.onclick     = handleClose;
         fEditorSelector.onchange = editorSelect;
 
-	updateHistory( user.getHistory() );
+	var self = {
+	    updateHistory : updateHistory,
+	};
 
-        return {};
+        return self;
 
         function handleOpen ( ) {
             fSideMenu.classList.add( 'open-state' );
@@ -174,7 +185,8 @@ module App  {
             editor.setEditorMode( mode );
         }
 
-	function updateHistory ( history ) {
+	function updateHistory ( user ) {
+	    let history = user.getHistory()
 
 	    fHistory.innerHTML = "";
 
