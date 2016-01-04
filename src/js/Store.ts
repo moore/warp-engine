@@ -1,7 +1,8 @@
 /// <reference path="typings/whatwg-fetch/whatwg-fetch.d.ts" />
-/// <reference path="./Cap.ts" />
 
-module Store  {
+import {Cap} from "./Cap";
+
+export module Store  {
 
     export interface Store {
         save( cap : Cap.Cap, code : string ) : any ;
@@ -25,76 +26,60 @@ module Store  {
             if ( cap.getMode() !== 'edit' )
                 return;
 
-            cap.toRead()
-                .then( function ( readCap ) {
-                    var preimage  = cap.getKey();
-                    var key       = readCap.getKey();
+            var readCap = cap.toRead();
 
-                    var url = "/set";
+            var preimage  = cap.getKey();
+            var key       = readCap.getKey();
 
-                    var request = {
-                        Preimage : preimage,
-                        Key      : key,
-                        DataType : "JavaScript",
-                        Data     : code,
-                    }
+            var url = "/set";
 
-                    return fetch(url, {  
-                        method: 'post',  
-                        headers: {  
-                            "Content-type": "application/json; charset=UTF-8"  
-                        },  
-                        body: JSON.stringify(request)
-                    })
-                        .then(json)  
-                        .then(function (data) {  
-                            return Promise.resolve( data );
-                        })  
-                        .catch(function (error) {  
-                            console.log('Request failed', error);
-                            return Promise.reject( undefined );
-                        });
+            var request = {
+                Preimage : preimage,
+                Key      : key,
+                DataType : "JavaScript",
+                Data     : code,
+            }
 
-                    function json(response) {  
-                        return response.json()  
-                    } 
+            return fetch(url, {  
+                method: 'post',  
+                headers: {  
+                    "Content-type": "application/json; charset=UTF-8"  
+                },  
+                body: JSON.stringify(request)
+            })
+                .then(json)  
+                .then(function (data) {  
+                    return Promise.resolve( data );
+                })  
+                .catch(function (error) {  
+                    console.log('Request failed', error);
+                    return Promise.reject( undefined );
                 });
+
+            function json(response) {  
+                return response.json()  
+            } 
         }
 
         function load ( cap ) {
 
             var url = "/get";
 
-            var result;
-
-            if ( cap.getMode() === 'edit' )
-                result = cap.toRead()
-                .then( doLoad );
-
-            else {
-                result = doLoad( cap );
+            var request = {
+                Key : cap.toRead().getKey(),
             }
 
-            return result;
+            return fetch(url, {  
+                method: 'post',  
+                headers: {  
+                    "Content-type": "application/json; charset=UTF-8"  
+                },  
+                body: JSON.stringify(request) })
+                .then(json);  
 
-            function doLoad ( readCap ) {
-                var request = {
-                    Key : readCap.getKey(),
-                }
-
-                return fetch(url, {  
-                    method: 'post',  
-                    headers: {  
-                        "Content-type": "application/json; charset=UTF-8"  
-                    },  
-                    body: JSON.stringify(request) })
-                    .then(json);  
-
-                function json(response) {  
-                    return response.json()  
-                }
+            function json(response) {  
+                return response.json()  
             }
-
         }
 
     }

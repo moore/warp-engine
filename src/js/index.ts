@@ -1,3 +1,3 @@
-/// <reference path="./App.ts" />
+import {App} from "./App";
 
-var app = App.factory( document );
+var app = App.factory( document.body );

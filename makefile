@@ -51,7 +51,8 @@ tsfiles = $(shell find src/js -name  '*.ts')
 js : ${BUILD_JS_DIR} ${tsfiles}
 	cp ${JS_DIR}/*.ts ${BUILD_JS_DIR}
 	cp -r ${TYPE_LIBS} ${BUILD_JS_DIR}
-	cd ${BUILD_JS_DIR} && tsc --sourceMap --target es5 --module commonjs --out ${OUT_FILE} index.ts
+	cd ${BUILD_JS_DIR} && tsc --sourceMap --target es5 --module commonjs  index.ts 
+	cd ${BUILD_JS_DIR} && browserify index.js --debug | exorcist index.js.map >  ${OUT_FILE}
 
 
 ${HTDOCS}: js

@@ -1,4 +1,4 @@
-module Sandbox {
+export module Sandbox {
 
     export interface SandboxResult {
 	code        : string;

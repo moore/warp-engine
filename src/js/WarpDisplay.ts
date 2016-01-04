@@ -1,25 +1,37 @@
-module WarpDisplay  {
+import {Controler} from "./Controler";
+export module WarpDisplay  {
 
     export interface Display {
-	draw( warp : any )         : void ;
-	setPaletMode( mode : any ) : void ;
+	draw( warp: any ): void ;
+	update( state: any ): void ;
+	setPaletMode( mode: any ): void ;
     }
 
 
-    export function factory ( root ) : Display {
+    export function factory<E> ( controler: Controler.Controler<E>, root: HTMLElement ) : Display {
 	
-	var container = root.getElementById("code-output");
-	var canvas    = root.getElementById("canvas");
+	var container = <HTMLElement>root.querySelector("#code-output");
+	var canvas    = <HTMLCanvasElement>root.querySelector("#canvas");
 	var ctx       = canvas.getContext("2d");
-	var palette   = root.getElementById("color-palette");
-	var warpEnds  = document.getElementById("warp-ends");
+	var palette   = <HTMLElement>root.querySelector("#color-palette");
+	var warpEnds  = <HTMLElement>document.querySelector("#warp-ends");
+
+	var fDraft = undefined;
 
 	var warpDisplay = {
+	    update       : update,
 	    draw         : draw,
 	    setPaletMode : setPaletMode,
 	}
 
 	return warpDisplay;
+
+	function update ( state: any ): void {
+	    if ( state.draft !== fDraft ) {
+		fDraft = state.draft;
+		draw( fDraft.getData() );
+	    }
+	}
 
 	function draw ( warp ) {
 	    var threads = warp.threads;

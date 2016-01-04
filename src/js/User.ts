@@ -1,9 +1,14 @@
-/// <reference path="./Cap.ts" />
-module User  {
+ 
+import {Cap} from "./Cap";
+import {Store} from "./Store";
+import {ObjectHelpers} from "./ObjectHelpers";
+
+export module User  {
 
     export interface User {
-	addDocument( title : string, cap : Cap.Cap ) :  Promise<User> ;
-	getHistory( ) : any ;
+	addDocument( title: string, cap: Cap.Cap ): User;
+	getHistory( ): any;
+	save( store: Store.Store ): Promise<User>;
     }
 
     interface Entry {
@@ -19,105 +24,133 @@ module User  {
 	history : Array<Entry>;
     }
 
-    export function factory ( ) : User {
 
+    export function factory ( fCap ) : Promise<User> {
+	return load( fCap ).then( ( userRecord ) => {
+	    var fUserRecord: UserRecord;
+
+	    if ( userRecord === undefined )
+		fUserRecord = newUser();
+
+	    else
+		fUserRecord = userRecord;
+	    
+	    return init( fCap, fUserRecord );
+	} );
+    }
+
+
+    function init ( fCap: Cap.Cap, fUserRecord: UserRecord ) : User {
 	var self = {
 	    addDocument : addDocument,
 	    getHistory  : getHistory,
+	    save        : save,
 	};
 
-	var fUserRecord: UserRecord = load();
+	fUserRecord = ObjectHelpers.deepFreeze( fUserRecord );
 
-	if ( fUserRecord === undefined )
-	    fUserRecord = newUser();
+	return self ;
 
-	return self;
+	function addDocument ( title: string, cap: Cap.Cap ): User {
+	    let readCap = cap.toRead();
 
+	    let read : string;
+	    let write: string;
 
-	function addDocument ( title: string, cap: Cap.Cap ) : Promise<User> {
-
-	    if ( cap.getMode() === 'read' ) {
-		addDocumentWorker( title, cap.toString(), "" );
-		return Promise.resolve( self );
+	    // toRead returns self is cap is read cap
+	    if ( readCap === cap ) {
+		read  = readCap.toString();
+		write = ""
 	    }
 
 	    else {
-		return cap.toRead().then( function ( readCap ) {
-		    addDocumentWorker( title, readCap.toString(), cap.toString() );
-		    return Promise.resolve( self );
-		} );
-	    }
-	    
-	}
-
-	function addDocumentWorker ( title: string, read: string, write: string ) : void {
-
-	    var history  = fUserRecord.history;
-
-	    if ( history.length > 0 ) {
-		let head = history[0];
-
-		if ( head.title === title
-		     && head.read === read
-		     && head.write === write )
-		    return;
+		read  = readCap.toString();
+		write = cap.toString();
 	    }
 
-	    var entry: Entry =  {
-		title : title,
-		name  : "",
-		read  : read,
-		write : write,
-	    };
+	    let newUserRecord = addDocumentWorker( fUserRecord, title, read, write );
 
-	    var newHistory: Array<Entry> = [ entry ];
-
-	    for ( var i = 0 ; i < history.length ; i++ ) {
-		var current = history[ i ];
-
-		if ( current.read !== entry.read )
-		    newHistory.push( current );
-
-		else if ( current.write !== "" ) {
-		    current.title = title;
-		    newHistory[0] = current ;
-		}
-	    }
-
-	    fUserRecord.history = newHistory;
-
-	    save( );
+	    return init( fCap, newUserRecord );
 	}
 
 	function getHistory ( ) {
-	    // BUG: Lame hack
-	    return JSON.parse( JSON.stringify( fUserRecord.history ) );
+	    return fUserRecord.history;
 	}
 
-	function save ( ) {
+	function save ( store: Store.Store ): Promise<User> {
+	    console.log("Save called!", fUserRecord );
 	    var data = JSON.stringify( fUserRecord );
 	    localStorage.setItem( 'UserRecord', data );
+	    return Promise.resolve( self );
+	}
+    }
+
+
+    function addDocumentWorker ( userRecord : UserRecord, 
+				 title: string, 
+				 read: string, 
+				 write: string ) : UserRecord {
+
+	var history  = userRecord.history;
+
+	if ( history.length > 0 ) {
+	    let head = history[0];
+
+	    if ( head.title === title
+		 && head.read === read
+		 && head.write === write )
+		return userRecord;
 	}
 
-	function load ( ) {
-	    var jsonStr = localStorage.getItem( 'UserRecord' );
+	var entry: Entry =  {
+	    title : title,
+	    name  : "",
+	    read  : read,
+	    write : write,
+	};
 
-	    if ( jsonStr === null )
-		return undefined;
+	var newHistory: Array<Entry> = [ entry ];
 
-	    return JSON.parse( jsonStr );
+	for ( var i = 0 ; i < history.length ; i++ ) {
+	    var current = history[ i ];
+
+	    if ( current.read !== entry.read )
+		newHistory.push( current );
+
+	    else if ( current.write !== "" ) {
+		current.title = title;
+		newHistory[0] = current ;
+	    }
 	}
 
+	let newRecord: UserRecord  = {
+	    name    : userRecord.name,
+	    editor  : userRecord.editor,
+	    history : newHistory,
+	};
 
-	function newUser ( ) {
-	    var user: UserRecord = {
-		name    : "Unknown User",
-		editor  : "default",
-		history : [],
-	    };
+	return newRecord;
+    }
 
-	    return user;
-	}
+
+    function load ( cap : Cap.Cap ) : Promise<UserRecord> {
+	var jsonStr = localStorage.getItem( 'UserRecord' );
+
+	if ( jsonStr === null )
+	    return undefined;
+
+	return Promise.resolve( JSON.parse( jsonStr ) );
+    }
+
+
+    function newUser ( ) {
+	var user: UserRecord = {
+	    name    : "Unknown User",
+	    editor  : "default",
+	    history : [],
+	};
+
+	return user;
     }
 
 }

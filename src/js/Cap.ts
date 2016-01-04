@@ -1,15 +1,15 @@
-module Cap  {
+export module Cap  {
     var KEY_LENGTH = 15;
 
     export interface Cap {
-	toRead()  : Promise<Cap>;
+	toRead()  : Cap;
 	getKey()  : string;
 	getMode() : string;
 	toString(): string;
     }
 
 
-    export function capFromString ( capString: string ) : Cap {
+    export function capFromString ( capString: string ) : Promise<Cap> {
 	
 	var fCapStruct = parseCap( capString );
 
@@ -19,11 +19,13 @@ module Cap  {
 	return initCap( fCapStruct );
     }
 
-    export function newCap ( ) : Cap {
+    export function newCap ( ) : Promise<Cap> {
 	return initCap( makeCap() );
     }
 
-    function initCap ( fCapStruct ) {
+    function initCap ( fCapStruct ): Promise<Cap> {
+
+	var fReadCap: Cap;
 
 	var self = {
 	    toRead    : toRead,
@@ -32,14 +34,23 @@ module Cap  {
 	    toString  : toString,
 	}
 
-	return  self;
+	return makeRead();
 	
-	function toRead ( ) : Promise<Cap> {
-	    if ( fCapStruct.mode === 'read' )
+	function toRead ( ): Cap {
+	    return fReadCap;
+	}
+
+	function makeRead ( ) : Promise<Cap> {
+	    if ( fCapStruct.mode === 'read' ) {
+		fReadCap = self;
 		return Promise.resolve( self );
+	    }
 
 	    return editToGetKey( fCapStruct.key ).then( function ( readKey ) {
-		return Promise.resolve( initCap( { mode : 'read', key : readKey } ) );
+		return initCap( { mode : 'read', key : readKey } ).then( ( readCap ) => {
+		    fReadCap = readCap;
+		    return self;
+		} );
 	    });
 	}
 
@@ -52,6 +63,7 @@ module Cap  {
 	}
 
 	function toString ( ) {
+	    // BOOG: should have version in hear!!!
 	    return fCapStruct.mode + ":" + encodeKey( fCapStruct.key );
 	}
 	

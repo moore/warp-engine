@@ -1,21 +1,28 @@
 /// <reference path="typings/codemirror/codemirror.d.ts" />
-module Editor {
+
+import {Controler} from "./Controler";
+
+export module Editor {
 
     export interface Editor {
         setEditorMode( mode : string ) : void ;
 	setContents( code: string ) : void ;
 	getContents( ) : string;
+	update( state: any ): void ;
     }
 
-    export function factory ( root, code ): Editor {
+    export function factory<E> ( controler: Controler.Controler<E>, root: HTMLElement, code : string ): Editor {
 
         var self = {
             setEditorMode : setEditorMode,
 	    setContents   : setContents,
 	    getContents   : getContents,
+	    update        : update,
         };
         
-        var codeMirrorDiv = root.getElementById("code-mirror");
+	controler.subscribe( self );
+
+        var codeMirrorDiv = <HTMLElement>root.querySelector("#code-mirror");
 
         var editor = CodeMirror( codeMirrorDiv, {
             value : code,
@@ -24,7 +31,20 @@ module Editor {
             lineNumbers: true,
         });
 
+	var fDraft = undefined;
+
         return self;
+
+	function update ( state: any ): void  {
+	    if ( state.draft !== fDraft ) {
+
+		fDraft = state.draft;
+
+		if ( fDraft !== undefined )
+		    setContents( fDraft.getData().code );
+	    }
+	}
+
 
 	function setContents ( code : string ) : void {
 	    editor.getDoc().setValue( code );

@@ -1,8 +1,8 @@
-/// <reference path="./ObjectHelpers.ts" />
-module Draft  {
+import {ObjectHelpers} from "./ObjectHelpers";
+
+export module Draft  {
 
     export interface DraftStruct {
-        format  : number;
 	serial  : number;
 	title   : string;
 	threads : Array<number>;
@@ -27,15 +27,14 @@ module Draft  {
 
     export function fromString ( draftString : string ) : Draft {
 
+	// Bug: I think this should be removed. It only serves
+	// to handle a type error elsewhere.
 	if ( draftString === "" )
 	    return newDraft();
 
 	var parsed = JSON.parse( draftString );
 
 	var draftStruct = emptyDraft();
-
-	if ( parsed.format !== 1 )
-	    return error( "format is not 1" );
 
 	if ( typeof( parsed.serial ) !== "number" )
 	    return error( "serial is not number" );
@@ -64,7 +63,7 @@ module Draft  {
 
     function init ( fDraftStruct: DraftStruct ) : Draft {
 	
-	fDraftStruct = ObjectHelpers.deepFreeze( fDraftStruct );
+	fDraftStruct = ObjectHelpers.deepFreeze( fDraftStruct ); 
 
 	var self: Draft = {
 	    update   : update,
@@ -118,7 +117,6 @@ module Draft  {
 
     function emptyDraft ( ) : DraftStruct {
 	var draftStruct: DraftStruct = {
-	    format  : 1,
 	    serial  : 0,
 	    title   : "Untitled draft",
 	    threads : [],
