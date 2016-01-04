@@ -123,10 +123,9 @@ export module InitState {
 
 	if ( event === EventType.ReceivedUser ) {
 	    let user = data;
-
 	    
 	    if ( state.draft !== undefined )
-		user = state.user.addDocument( state.draft.getData().title, state.cap )
+		user = user.addDocument( state.draft.getData().title, state.cap )
 
 	    state = ObjectHelpers.update( state, { user: user } );
 	}
