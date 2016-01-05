@@ -31,6 +31,8 @@ export module Ui {
         fCloseButton.onclick     = handleClose;
         fEditorSelector.onchange = editorSelect;
 	fNewDraft.onclick        = handleNewDraft;
+	fCopyDraft.onclick       = handleCopyDraft;
+	fShareDraft.onclick      = handleShareDraft;
 
         var self = {
             updateHistory : updateHistory,
@@ -68,9 +70,33 @@ export module Ui {
 		let draft = Draft.newDraft( );
 		controler.accept( EventType.StartFromCap, cap );
 		controler.accept( EventType.ReceivedDoc, draft );
+		// BUG: dose not check if users is undefined
 		controler.accept( EventType.ReceivedUser, oldState.user );
             });
 
+	}
+
+
+	function handleCopyDraft ( ) {
+	    let oldState = <AppState>controler.reset( );
+
+	    Cap.newCap( ).then( ( cap ) => {
+		// BUG: dose not check if draft is undefined
+		let title = oldState.draft.getData().title + " (copy)";
+		let draft = oldState.draft.setTitle( title );
+		controler.accept( EventType.StartFromCap, cap );
+		controler.accept( EventType.ReceivedDoc, draft );
+		// BUG: dose not check if users is undefined
+		controler.accept( EventType.ReceivedUser, oldState.user );
+            });
+	}
+
+	
+	function handleShareDraft ( ) {
+	    let href = document.location.href;
+	    let hash = href.indexOf('#');
+	    let base = href.slice(0,hash);
+	    alert( "Not implmented yet :(" );
 	}
 
         function handleOpen ( ) {
