@@ -114,13 +114,17 @@ export module User  {
 	for ( var i = 0 ; i < history.length ; i++ ) {
 	    var current = history[ i ];
 
-	    if ( current.read !== entry.read )
+	    if ( current.read !== entry.read ) {
 		newHistory.push( current );
-
-	    else if ( current.write !== "" ) {
-		current.title = title;
-		newHistory[0] = current ;
+		continue;
 	    }
+
+	    // Update write cap if entry dose not have one
+	    if ( entry.write === "" ) {
+		entry.write = current.write;
+	    }
+
+	    entry.name = current.name;
 	}
 
 	let newRecord: UserRecord  = {
