@@ -3,6 +3,7 @@ import {ObjectHelpers} from "./ObjectHelpers";
 export module Draft  {
 
     export interface DraftStruct {
+	format  : number;
 	serial  : number;
 	title   : string;
 	threads : Array<number>;
@@ -35,6 +36,9 @@ export module Draft  {
 	var parsed = JSON.parse( draftString );
 
 	var draftStruct = emptyDraft();
+
+	if ( typeof( parsed.format ) !== "number" )
+	    return error( "serial is not number" );
 
 	if ( typeof( parsed.serial ) !== "number" )
 	    return error( "serial is not number" );
@@ -117,6 +121,7 @@ export module Draft  {
 
     function emptyDraft ( ) : DraftStruct {
 	var draftStruct: DraftStruct = {
+	    format  : 1,
 	    serial  : 0,
 	    title   : "Untitled draft",
 	    threads : [],

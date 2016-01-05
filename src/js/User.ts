@@ -12,13 +12,15 @@ export module User  {
     }
 
     interface Entry {
-	title : string;
-	name  : string;
-	read  : string;
-	write : string;
+	format : number;
+	title  : string;
+	name   : string;
+	read   : string;
+	write  : string;
     }
 
     interface UserRecord {
+	format  : number;
 	name    : string;
 	editor  : string;
 	history : Array<Entry>;
@@ -78,7 +80,6 @@ export module User  {
 	}
 
 	function save ( store: Store.Store ): Promise<User> {
-	    console.log("Save called!", fUserRecord );
 	    var data = JSON.stringify( fUserRecord );
 	    localStorage.setItem( 'UserRecord', data );
 	    return Promise.resolve( self );
@@ -103,10 +104,11 @@ export module User  {
 	}
 
 	var entry: Entry =  {
-	    title : title,
-	    name  : "",
-	    read  : read,
-	    write : write,
+	    format : 1,
+	    title  : title,
+	    name   : "",
+	    read   : read,
+	    write  : write,
 	};
 
 	var newHistory: Array<Entry> = [ entry ];
@@ -128,6 +130,7 @@ export module User  {
 	}
 
 	let newRecord: UserRecord  = {
+	    format  : 1,
 	    name    : userRecord.name,
 	    editor  : userRecord.editor,
 	    history : newHistory,
@@ -141,7 +144,7 @@ export module User  {
 	var jsonStr = localStorage.getItem( 'UserRecord' );
 
 	if ( jsonStr === null )
-	    return undefined;
+	    return Promise.resolve( newUser() );
 
 	return Promise.resolve( JSON.parse( jsonStr ) );
     }
@@ -149,6 +152,7 @@ export module User  {
 
     function newUser ( ) {
 	var user: UserRecord = {
+	    format  : 1,
 	    name    : "Unknown User",
 	    editor  : "default",
 	    history : [],

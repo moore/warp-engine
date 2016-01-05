@@ -14,7 +14,7 @@ export module Cap  {
 	var fCapStruct = parseCap( capString );
 
 	if ( fCapStruct === undefined )
-	    return undefined;
+	    return Promise.resolve( undefined );
 
 	return initCap( fCapStruct );
     }
@@ -64,7 +64,7 @@ export module Cap  {
 
 	function toString ( ) {
 	    // BOOG: should have version in hear!!!
-	    return fCapStruct.mode + ":" + encodeKey( fCapStruct.key );
+	    return "1:" + fCapStruct.mode + ":" + encodeKey( fCapStruct.key );
 	}
 	
     }
@@ -73,15 +73,22 @@ export module Cap  {
 
 	var parts = capString.split(":");
 	
-	if ( parts.length !== 2 )
+	if ( parts.length !== 3 )
 	    return undefined;
 
-	var mode = parts[0];
+
+	var format = parts[0];
+
+	if ( format !== '1' )
+	    return undefined;
+
+
+	var mode = parts[1];
 
 	if ( mode !== 'read' && mode !== 'edit' )
 	    return undefined;
 
-	var key  = decodeKey( parts[1] );
+	var key  = decodeKey( parts[2] );
 
 	if ( key.byteLength !== KEY_LENGTH )
 	    return undefined
