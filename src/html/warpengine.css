@@ -118,6 +118,45 @@ div.color-swatch {
     height : 0px;
 }
 
+.click-catcher {
+    position   : absolute ;
+    width      : 100%;
+    height     : 100%;
+    z-index    : 150;
+    background : rgba( 0, 0, 0, 0.3 );
+}
+
+.alert-box {
+    z-index      : 200;
+    position     : absolute;
+    top          : 10%;
+    margin-right : 33%;
+    margin-left  : 33%;
+    width        : 33%;
+    min-width    : 400px;
+    height       : 200px;
+    border       : 4px solid #eeeeee;
+    background   : white;
+    font-size    : 14pt;
+    text-align   : center;
+    padding      : 8px;
+    
+}
+
+.share-link-input {
+    font-size  : 14pt;
+    text-align : center;
+    width      : 90%;
+    margin     : 5%;
+}
+
+.alert-box.hidden {
+    top : -300px;
+}
+
+.click-catcher.hidden {
+    display : none;
+}
 
 .side-menu.open-state {
     left : 0px;

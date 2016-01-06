@@ -13,17 +13,21 @@ export module Ui {
 
 
     export function factory ( controler: Controler.Controler<EventType>, root, editor ): Ui  {
-        var fOpenButton     = root.querySelector( ".side-menu-open" );
-        var fCloseButton    = root.querySelector( ".side-menu-close" );
-        var fSideMenu       = root.querySelector( ".side-menu" );
-        var fEditorSelector = root.querySelector("#editor-mode" );
-        var fHistory        = root.querySelector( ".history" );
-        var fNewDraft       = root.querySelector( ".new-draft" );
-        var fCopyDraft      = root.querySelector( ".copy-draft" );
-        var fShareDraft     = root.querySelector( ".share-draft" );
-	var fUser           = undefined;
-        var fTitleDiv       = <HTMLElement>root.querySelector( ".draft-title" );
-	var fTitle          = fTitleDiv.innerText;
+        var fOpenButton      = root.querySelector( ".side-menu-open" );
+        var fCloseButton     = root.querySelector( ".side-menu-close" );
+        var fSideMenu        = root.querySelector( ".side-menu" );
+        var fEditorSelector  = root.querySelector("#editor-mode" );
+        var fHistory         = root.querySelector( ".history" );
+        var fNewDraft        = root.querySelector( ".new-draft" );
+        var fCopyDraft       = root.querySelector( ".copy-draft" );
+        var fShareDraft      = root.querySelector( ".share-draft" );
+	var fClickCatcher    = root.querySelector( ".click-catcher" );
+	var fAlertBox        = root.querySelector( ".alert-box" );
+	var fUser            = undefined;
+        var fTitleDiv        = <HTMLElement>root.querySelector( ".draft-title" );
+	var fTitle           = fTitleDiv.innerText;
+	var fShareLink       = undefined;
+	var fCatcherCallback = undefined;
 
         fTitleDiv.addEventListener("blur", handleBlur, true);
 
@@ -33,6 +37,7 @@ export module Ui {
 	fNewDraft.onclick        = handleNewDraft;
 	fCopyDraft.onclick       = handleCopyDraft;
 	fShareDraft.onclick      = handleShareDraft;
+	fClickCatcher.onclick    = handleClickCatcher;
 
         var self = {
             updateHistory : updateHistory,
@@ -46,6 +51,9 @@ export module Ui {
         }
 
 	function update( state: any ): void {
+
+	    if ( state.cap !== undefined )
+		fShareLink = makeShareLink( state.cap );
 
 	    if ( state.user !== fUser ) {
 		fUser = state.user;
@@ -62,6 +70,18 @@ export module Ui {
 		}
 	    }
 	}
+
+
+	function handleClickCatcher ( ) {
+	    console.log( "click" );
+	    fClickCatcher.classList.add( 'hidden' );
+
+	    if ( fCatcherCallback !== undefined )
+		fCatcherCallback();
+
+	    fCatcherCallback = undefined;
+	}
+
 
 	function handleNewDraft ( ) {
 	    let oldState = <AppState>controler.reset( );
@@ -93,11 +113,32 @@ export module Ui {
 
 	
 	function handleShareDraft ( ) {
+	    fCatcherCallback = closeAlert;
+	    fClickCatcher.classList.remove( 'hidden' );
+	    fAlertBox.classList.remove( 'hidden' );
+	    fAlertBox.innerHTML = "";
+	    let text  = document.createTextNode( "This link will grant read only access to the draft." );
+	    let input = document.createElement( 'input' );
+	    input.value = fShareLink;
+	    input.classList.add( 'share-link-input' );
+
+	    fAlertBox.appendChild( text );
+	    fAlertBox.appendChild( input );
+	}
+
+	function closeAlert ( ) {
+	    fAlertBox.classList.add( 'hidden' );
+	}
+
+	function makeShareLink ( cap: Cap.Cap ) {
 	    let href = document.location.href;
 	    let hash = href.indexOf('#');
 	    let base = href.slice(0,hash);
-	    alert( "Not implmented yet :(" );
+	    let capStr = cap.toRead().toString();
+
+	    return href.slice(0,hash) + "#" + capStr;
 	}
+
 
         function handleOpen ( ) {
             fSideMenu.classList.add( 'open-state' );
