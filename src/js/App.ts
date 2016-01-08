@@ -164,15 +164,17 @@ export module App  {
 
 		// BOOG should we really be setting code every time hear?
 		fComponents.editor.setContents( draftData.code );
+
+		if ( state.state === StateType.Ready && fState.draft !== undefined )
+		    save( state.cap, state.draft );
 	    } );
 
 	    if ( fState.log !== state.log )
 		fCaptainsLogElm.value = state.log;
 
+
 	    fState = state;
 
-	    if ( state.state === StateType.Ready )
-		save( state.cap, state.draft );
 	}
 
 
@@ -224,11 +226,12 @@ export module App  {
 
 	
         function save ( cap, draft ) {
-            // BUG: we are not acutally storing js any more
 	    let draftString = draft.toString();
-	    let draftTitle  = draft.getData().title;
+	    let draftData   = draft.getData();
+	    let serial      = draftData.serial;
+	    let dataType    = 'DraftStruct';
 
-            fComponents.store.save( cap, draftString );
+            fComponents.store.save( cap, serial, dataType, draftString );
         }
 
         function runCode ( ) {

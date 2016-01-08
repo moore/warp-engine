@@ -13,6 +13,7 @@ CERTS_DIR    = certs
 BUILD_DIR    = build
 BUILD_JS_DIR = ${BUILD_DIR}/js
 BUILD_GO_DIR = ${BUILD_DIR}/go
+GO_DEPS      = ${CWD}/go-deps
 
 OUT_FILE     = warp-engine.js
 MIN_OUT_FILE = warp-engine.min.js
@@ -20,7 +21,7 @@ MIN_OUT_FILE = warp-engine.min.js
 .PHONY: all clean distclean deps 
 all:: ${HTDOCS}
 
-deps:: npm tsd
+deps:: npm tsd goget
 
 ${BUILD_GO_DIR}:
 	mkdir -p ${BUILD_GO_DIR}
@@ -28,20 +29,22 @@ ${BUILD_GO_DIR}:
 ${GO_HOME}:
 	mkdir -p ${GO_HOME}
 
+${GO_DEPS}:
+	mkdir -p ${GO_DEPS}
 
 go : ${BUILD_GO_DIR} ${GO_HOME}
-	#GOPATH=`pwd`/${GO_HOME} go build -o ${BUILD_GO_DIR}/server go-libs/planet.com/go-message/server.go
+	# do nothing
 
 prep : ${GO_HOME}  ${HTDOCS}
 	cp -r ${GO_DIR}/* ${GO_HOME}
 	cp -r ${HTDOCS} ${GO_HOME}
-	#aedeploy gcloud preview app deploy app.yaml --promote
+
 
 dev-app: prep
-	cd ${GO_HOME} && goapp serve
+	cd ${GO_HOME} && GOPATH=${GO_DEPS} goapp serve
 
 deploy : prep
-	cd ${GO_HOME} && goapp deploy -application engine-room
+	cd ${GO_HOME} && GOPATH=${GO_DEPS} goapp deploy -application engine-room
 
 ${BUILD_JS_DIR}:
 	mkdir -p ${BUILD_JS_DIR}
@@ -82,6 +85,8 @@ npm :
 tsd :
 	tsd install
 
+goget : ${GO_DEPS}
+	#cd ${GO_HOME} && GOPATH=${GO_DEPS} go get golang.org/x/net/context
 
 clean:: 
 	-rm -rf ${BUILD_DIR} ${HTDOCS} ${GO_HOME}

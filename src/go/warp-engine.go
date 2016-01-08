@@ -6,10 +6,12 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"encoding/json"
 	"crypto/sha256"
 	"encoding/base64"
+
 	"appengine"
 	"appengine/datastore"
 )
@@ -28,6 +30,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 type SetWarp struct {
 	Preimage string
+	Serial   int32
 	Key      string
 	DataType string
 	Data     string
@@ -39,6 +42,7 @@ type GetWarp struct {
 }
 
 type Warp struct {
+	Serial   int32
 	Key      string
 	DataType string
 	Data     string `datastore:",noindex"`
@@ -46,7 +50,7 @@ type Warp struct {
 
 
 func handleSet(writer http.ResponseWriter, req *http.Request) {
-	context := appengine.NewContext(req)
+	ctx := appengine.NewContext(req)
 
 	decoder := json.NewDecoder(req.Body)
 
@@ -81,27 +85,55 @@ func handleSet(writer http.ResponseWriter, req *http.Request) {
 	}
 	
 	warp := Warp {
+		Serial : setWarp.Serial,
 		Key   : setWarp.Key,
 		DataType : "JavaScript",
 		Data : setWarp.Data,
 	}
 	
 
-	key := datastore.NewKey(context, "Warp", warp.Key, 0, nil)
-	_, getErr := datastore.Put(context, key, &warp)
+	key := datastore.NewKey(ctx, "Warp", warp.Key, 0, nil)
+
+
+	err = datastore.RunInTransaction(ctx, func(context appengine.Context) error {
+
+		var existing Warp
+
+                err := datastore.Get(context, key, &existing )
+
+                if err != nil && err != datastore.ErrNoSuchEntity {
+                        return err
+                }
+                
+		if err != datastore.ErrNoSuchEntity && existing.Serial >= warp.Serial {
+			errorString := fmt.Sprintf("%v < %v\n", existing.Serial, warp.Serial)
+			http.Error(writer, errorString, http.StatusInternalServerError)
+			return nil
+		}
+
+		_, err = datastore.Put(context, key, &warp)
+
+		if err != nil {
+			return err
+		}
+
+                return err
+        }, nil)
 
 	if err != nil {
-		http.Error(writer, getErr.Error(), http.StatusInternalServerError)
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
  
 	result := "{\"result\":\"ok\"}"
+
 	writer.Write([]byte(result))
 
 }
 
 func handleGet(writer http.ResponseWriter, req *http.Request) {
-	context := appengine.NewContext(req)
+	ctx := appengine.NewContext(req)
 
 	decoder := json.NewDecoder(req.Body)
 
@@ -115,11 +147,11 @@ func handleGet(writer http.ResponseWriter, req *http.Request) {
 
 	var warp Warp
 
-	key := datastore.NewKey(context, "Warp", getWarp.Key, 0, nil)
+	key := datastore.NewKey(ctx, "Warp", getWarp.Key, 0, nil)
 
-	getErr := datastore.Get(context, key, &warp);
+	getErr := datastore.Get(ctx, key, &warp);
 
-	if err != nil {
+	if getErr != nil {
 		http.Error(writer, getErr.Error(), http.StatusInternalServerError)
 		return
 	}

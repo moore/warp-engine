@@ -5,8 +5,8 @@ import {Cap} from "./Cap";
 export module Store  {
 
     export interface Store {
-        save( cap : Cap.Cap, code : string ) : any ;
-        load( cap : Cap.Cap ) : any ;
+        save( cap: Cap.Cap, serial: number, dataType: string, code: string ): any ;
+        load( cap: Cap.Cap ): any ;
     }
 
 
@@ -21,7 +21,7 @@ export module Store  {
         return store;
 
 
-        function save ( cap, code ) {
+        function save ( cap, serial, dataType, code ) {
 
             if ( cap.getMode() !== 'edit' )
                 return;
@@ -35,8 +35,9 @@ export module Store  {
 
             var request = {
                 Preimage : preimage,
+		Serial   : serial,
                 Key      : key,
-                DataType : "JavaScript",
+                DataType : dataType,
                 Data     : code,
             }
 
