@@ -59,28 +59,36 @@ func handleSet(writer http.ResponseWriter, req *http.Request) {
 	err := decoder.Decode(&setWarp)
 
 	if err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
+		http.Error(writer, 
+			"{\"code\":\"bad-request\", \"reason\":\"bad json\"}", 
+			http.StatusBadRequest)
 		return
 	}
 
 	preimageBytes, err := base64.StdEncoding.DecodeString( setWarp.Preimage );
 
 	if err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
+		http.Error(writer, 
+			"{\"code\":\"bad-request\", \"reason\":\"bad cap\"}", 
+			http.StatusBadRequest)
 		return
 	}
 
 	keyBytes, err := base64.StdEncoding.DecodeString( setWarp.Key );
 
 	if err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
+		http.Error(writer, 
+			"{\"code\":\"bad-request\", \"reason\":\"bad key\"}", 
+			http.StatusBadRequest)
 		return
 	}
 
 	computedKeyBytes := sha256.Sum256(preimageBytes)
 
 	if bytes.Equal(keyBytes, computedKeyBytes[:15] ) != true {
-		http.Error(writer, "key != computed", http.StatusBadRequest)
+		http.Error(writer, 
+			"{\"code\":\"auth\", \"reason\":\"worng cap\"}", 
+			http.StatusBadRequest)
 		return
 	}
 	
@@ -106,7 +114,7 @@ func handleSet(writer http.ResponseWriter, req *http.Request) {
                 }
                 
 		if err != datastore.ErrNoSuchEntity && existing.Serial >= warp.Serial {
-			errorString := fmt.Sprintf("serial mismatch %v >= %v\n", 
+			errorString := fmt.Sprintf("{\"code\":\"serial\", \"reason\":\"serial mismatch %v >= %v\"}", 
 				existing.Serial, warp.Serial)
 			http.Error(writer, errorString, http.StatusBadRequest)
 			return nil

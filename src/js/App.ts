@@ -231,7 +231,10 @@ export module App  {
 	    let serial      = draftData.serial;
 	    let dataType    = 'DraftStruct';
 
-            fComponents.store.save( cap, serial, dataType, draftString );
+            fComponents.store.save( cap, serial, dataType, draftString )
+		.then( ( data ) => console.log( "saved: ", data ) )
+		.catch( ( data ) => console.log( "save error: ", data ) )
+		;
         }
 
         function runCode ( ) {

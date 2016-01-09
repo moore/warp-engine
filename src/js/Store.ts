@@ -49,16 +49,10 @@ export module Store  {
                 body: JSON.stringify(request)
             })
                 .then(json)  
-                .then(function (data) {  
-                    return Promise.resolve( data );
-                })  
-                .catch(function (error) {  
-                    console.log('Request failed', error);
-                    return Promise.reject( undefined );
-                });
 
-            function json(response) {  
-                return response.json()  
+            function json (response) {  
+		return response.json().then( 
+		    function ( data ) { return { ok: response.ok, data : data } } );
             } 
         }
 
