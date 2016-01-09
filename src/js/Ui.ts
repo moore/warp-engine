@@ -9,6 +9,7 @@ export module Ui {
     export interface Ui {
 	updateHistory( user:User.User ): void ;
 	update( state: any ): void ;
+	alert( message: string ): void ;
     }
 
 
@@ -42,6 +43,7 @@ export module Ui {
         var self = {
             updateHistory : updateHistory,
 	    update        : update,
+	    alert         : alert,
         };
 
         return self;
@@ -71,6 +73,16 @@ export module Ui {
 	    }
 	}
 
+
+	function alert ( message: string ): void {
+	    fCatcherCallback = closeAlert;
+	    fClickCatcher.classList.remove( 'hidden' );
+	    fAlertBox.classList.remove( 'hidden' );
+	    fAlertBox.innerHTML = "";
+	    let text  = document.createTextNode( message );
+
+	    fAlertBox.appendChild( text );
+	}
 
 	function handleClickCatcher ( ) {
 	    console.log( "click" );

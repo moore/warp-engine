@@ -232,10 +232,23 @@ export module App  {
 	    let dataType    = 'DraftStruct';
 
             fComponents.store.save( cap, serial, dataType, draftString )
-		.then( ( data ) => console.log( "saved: ", data ) )
-		.catch( ( data ) => console.log( "save error: ", data ) )
+		.then( handleSaveResult )
+		.catch( ( data ) => console.log( "save error: ", data ) ) //BUG: tell user
 		;
         }
+
+	function handleSaveResult ( result ) {
+	    if ( result.ok === true ) {
+		// BUG: Sent saved status
+	    }
+
+	    else if ( result.data.code === 'serial' ) {
+		fComponents.ui.alert( "The draft appears to be open in another tab.\n"
+				      + "Try switching to other tab or reloading to "
+				      + "allow editing." );
+	    }
+		
+	}
 
         function runCode ( ) {
             var code = fComponents.editor.getContents();
