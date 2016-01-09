@@ -13,7 +13,7 @@ export module Ui {
     }
 
 
-    export function factory ( controler: Controler.Controler<EventType>, root, editor ): Ui  {
+    export function factory ( fControler: Controler.Controler<EventType>, root, editor ): Ui  {
         var fOpenButton      = root.querySelector( ".side-menu-open" );
         var fCloseButton     = root.querySelector( ".side-menu-close" );
         var fSideMenu        = root.querySelector( ".side-menu" );
@@ -40,6 +40,7 @@ export module Ui {
 	fShareDraft.onclick      = handleShareDraft;
 	fClickCatcher.onclick    = handleClickCatcher;
 
+
         var self = {
             updateHistory : updateHistory,
 	    update        : update,
@@ -49,7 +50,7 @@ export module Ui {
         return self;
 
 	function handleBlur ( event ) {
-	    controler.accept( EventType.SetTitle, fTitleDiv.innerText );
+	    fControler.accept( EventType.SetTitle, fTitleDiv.innerText );
         }
 
 	function update( state: any ): void {
@@ -96,30 +97,30 @@ export module Ui {
 
 
 	function handleNewDraft ( ) {
-	    let oldState = <AppState>controler.reset( );
+	    let oldState = <AppState>fControler.reset( );
 
 	    Cap.newCap( ).then( ( cap ) => {
 		let draft = Draft.newDraft( );
-		controler.accept( EventType.StartFromCap, cap );
-		controler.accept( EventType.ReceivedDoc, draft );
+		fControler.accept( EventType.StartFromCap, cap );
+		fControler.accept( EventType.ReceivedDoc, draft );
 		// BUG: dose not check if users is undefined
-		controler.accept( EventType.ReceivedUser, oldState.user );
+		fControler.accept( EventType.ReceivedUser, oldState.user );
             });
 
 	}
 
 
 	function handleCopyDraft ( ) {
-	    let oldState = <AppState>controler.reset( );
+	    let oldState = <AppState>fControler.reset( );
 
 	    Cap.newCap( ).then( ( cap ) => {
 		// BUG: dose not check if draft is undefined
 		let title = oldState.draft.getData().title + " (copy)";
 		let draft = oldState.draft.setTitle( title );
-		controler.accept( EventType.StartFromCap, cap );
-		controler.accept( EventType.ReceivedDoc, draft );
+		fControler.accept( EventType.StartFromCap, cap );
+		fControler.accept( EventType.ReceivedDoc, draft );
 		// BUG: dose not check if users is undefined
-		controler.accept( EventType.ReceivedUser, oldState.user );
+		fControler.accept( EventType.ReceivedUser, oldState.user );
             });
 	}
 
@@ -192,5 +193,7 @@ export module Ui {
 
             return entry;
         }
+
+
     }
 }

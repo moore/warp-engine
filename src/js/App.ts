@@ -4,47 +4,22 @@ import {WarpDisplay} from "./WarpDisplay";
 import {Store} from "./Store";
 import {User} from "./User";
 import {Editor} from "./Editor";
-import {Sandbox} from "./Sandbox";
 import {Draft} from "./Draft";
 import {Ui} from "./Ui";
 import {Controler} from "./Controler";
 
-import {EventType, AppState, StartState, EndInfo, EditorMode, StateType} from "./AppState";
+import {EventType, AppState, StartState, EditorMode, StateType} from "./AppState";
 
 export module App  {
 
-    interface AppComponents {
-	root    : HTMLElement;
-	store   : Store.Store;
-	display : WarpDisplay.Display;
-	editor  : Editor.Editor;
-	sandbox : Sandbox.Sandbox;
-	ui      : Ui.Ui; 
-    }
 
     export interface App {
 	update( state: AppState ): void ;
     }
 
-    function makeAppComponents ( controler: Controler.Controler<EventType>, root : HTMLElement ) : AppComponents {
-	let editor = Editor.factory( controler, root, '' )
 
-	let components = {
-	    root   : root,
-	    store  : Store.factory( ),
-	    display: WarpDisplay.factory( controler, root ),
-	    editor : editor,
-	    sandbox: Sandbox.factory( root ),
-	    ui     : Ui.factory( controler, root, editor ), // BUG: this should not take editor
-	};
-	
-	return components;
-    }
-
-    function startApp ( controler: Controler.Controler<EventType>, components: AppComponents, capString: string ): void {
+    function startApp ( controler: Controler.Controler<EventType>, store: Store.Store, capString: string ): void {
 	let cap: Cap.Cap;
-
-	let store = components.store;
 
         let fUserCap = "BOOG";
 
@@ -100,8 +75,15 @@ export module App  {
 
 	let fState       = StartState.make( );
 	let fControler   = Controler.factory( fState );
-	let fComponents  = makeAppComponents( fControler, root );
         let capString    = location.hash.slice( 1 );
+
+	let fStore   = Store.factory( )
+
+	let fEditor  = Editor.factory( fControler, root, '' );
+	let fDisplay = WarpDisplay.factory( fControler, root );
+	let fUi      = Ui.factory( fControler, root, fEditor );
+
+
 
 	fControler.subscribe( self );
 
@@ -120,7 +102,7 @@ export module App  {
 		else {
 		    fControler.accept( EventType.StartFromCap, cap );
 		    fControler.accept( EventType.ReceivedUser, oldState.user );
-		    fComponents.store.load( cap ).then( loadResult );
+		    fStore.load( cap ).then( loadResult );
 		}
             });
 	    
@@ -132,11 +114,8 @@ export module App  {
 
         }
 
-        var fCaptainsLogElm = <HTMLInputElement>root.querySelector("#captains-log");
 
-        initIde( );
-
-	startApp( fControler, fComponents, capString );
+	startApp( fControler, fStore, capString );
 
         return self;
 
@@ -148,29 +127,29 @@ export module App  {
 	    } );
 
 	    changed( state, 'user', ( ) => {
-		fComponents.ui.update( state );
-		state.user.save( fComponents.store );
+		fUi.update( state );
+		state.user.save( fStore );
 	    } );
 
 
 	    changed( state, 'endInfo', ( ) => {
-		fComponents.display.setPaletMode( state.endInfo );
+		fDisplay.setPaletMode( state.endInfo );
 	    } );
 
 	    changed( state, 'draft', ( ) => {
 		var draftData = state.draft.getData();
 
-		fComponents.display.draw( draftData );
+		fDisplay.draw( draftData );
 
 		// BOOG should we really be setting code every time hear?
-		fComponents.editor.setContents( draftData.code );
+		fEditor.setContents( draftData.code );
 
 		if ( state.state === StateType.Ready && fState.draft !== undefined )
 		    save( state.cap, state.draft );
 	    } );
 
 	    if ( fState.log !== state.log )
-		fCaptainsLogElm.value = state.log;
+		fEditor.setCaptiansLog( state.log );
 
 
 	    fState = state;
@@ -178,52 +157,10 @@ export module App  {
 	}
 
 
-	function changed( state, key, action ) {
+	function changed ( state, key, action ) {
 	    if ( state[key] !== undefined && state[key] !== fState[key] )
 		action();
 	}
-
-        function initIde ( ) {
-
-            setTimeout(resizeEditor, 0);
-            window.onresize = resizeEditor;
-
-            var paletteModeSelector = <HTMLInputElement>root.querySelector("#palette-mode");
-            paletteModeSelector.onchange = paletteModeSelect;
-
-
-            var showLogCheckbox = <HTMLInputElement>root.querySelector("#show-log");
-            showLogCheckbox.onchange = displayLog;
-
-            var drawButton = <HTMLElement>root.querySelector("#draw");
-            drawButton.onclick = runCode;
-
-            return;
-
-            function paletteModeSelect () {
-		let mode: EndInfo;
-		let modeString: string = paletteModeSelector.value;
-
-		if ( modeString === 'palette-by-index' )
-		    mode = EndInfo.Indexes;
-		else
-		    mode = EndInfo.Counts
-
-		fControler.accept( EventType.PalettModeSelect, mode );
-            }
-
-            function displayLog () {
-                var showLog = showLogCheckbox.checked;
-                if (showLog) {
-                    fCaptainsLogElm.style.display = "block";    
-                }
-                else {
-                    fCaptainsLogElm.style.display = "none";
-                }
-                resizeEditor();
-            }
-        }
-
 	
         function save ( cap, draft ) {
 	    let draftString = draft.toString();
@@ -231,7 +168,7 @@ export module App  {
 	    let serial      = draftData.serial;
 	    let dataType    = 'DraftStruct';
 
-            fComponents.store.save( cap, serial, dataType, draftString )
+            fStore.save( cap, serial, dataType, draftString )
 		.then( handleSaveResult )
 		.catch( ( data ) => console.log( "save error: ", data ) ) //BUG: tell user
 		;
@@ -243,35 +180,13 @@ export module App  {
 	    }
 
 	    else if ( result.data.code === 'serial' ) {
-		fComponents.ui.alert( "The draft appears to be open in another tab.\n"
+		fUi.alert( "The draft appears to be open in another tab.\n"
 				      + "Try switching to other tab or reloading to "
 				      + "allow editing." );
 	    }
 		
 	}
 
-        function runCode ( ) {
-            var code = fComponents.editor.getContents();
-
-            fComponents.sandbox.evaulate( code )
-                .then( function ( result: Sandbox.SandboxResult ) {
-		    fControler.accept( EventType.UpdateDraft, result );
-                } )
-                .catch( function ( error: Sandbox.SandboxError ) {
-                    if ( error.cancled === true )
-                        console.log( "evaluation cancled becouse: '%s'", error.reason );
-                    else
-			fControler.accept( EventType.RuntimeError, error );
-                } );
-        }
-
-
-        function resizeEditor () {
-            var editor = <HTMLElement>document.querySelector(".CodeMirror");
-            var editorPosition = editor.getBoundingClientRect();
-            var bodyMargin = +(getComputedStyle(document.body).marginBottom.slice(0, -2));
-            editor.style.height = (window.innerHeight - editorPosition.top - bodyMargin) + "px";
-        }
     } 
 
 
