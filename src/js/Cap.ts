@@ -2,6 +2,7 @@ export module Cap  {
     var KEY_LENGTH = 15;
 
     export interface Cap {
+	isRead()  : boolean;
 	toRead()  : Cap;
 	getKey()  : string;
 	getMode() : string;
@@ -28,6 +29,7 @@ export module Cap  {
 	var fReadCap: Cap;
 
 	var self = {
+	    isRead    : isRead,
 	    toRead    : toRead,
 	    getKey    : getKey,
 	    getMode   : getMode,
@@ -35,6 +37,10 @@ export module Cap  {
 	}
 
 	return makeRead();
+	
+	function isRead ( ): boolean {
+	    return fCapStruct.mode === 'read';
+	}
 	
 	function toRead ( ): Cap {
 	    return fReadCap;

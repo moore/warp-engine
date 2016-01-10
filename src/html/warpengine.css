@@ -100,11 +100,16 @@ div.color-swatch {
     border: 1px solid #eeeeee;
 }
 
-#code-editor{
+#code-editor {
 	width: 900px;
 	margin-left: auto;
 	margin-right: auto;
 }
+
+#code-editor.hidden {
+    display: none;
+}
+
 
 #captains-log{
     width: 894px;

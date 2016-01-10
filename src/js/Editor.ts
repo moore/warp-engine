@@ -10,6 +10,7 @@ export module Editor {
     export interface Editor {
         setEditorMode( mode : string ) : void ;
 	setCaptiansLog ( value: string ): void;
+	setReadOnly ( readOnly: boolean ): void;
 	setContents( code: string ) : void ;
 	getContents( ) : string;
 	update( state: any ): void ;
@@ -20,6 +21,7 @@ export module Editor {
         var self = {
             setEditorMode  : setEditorMode,
 	    setCaptiansLog : setCaptiansLog,
+	    setReadOnly    : setReadOnly,
 	    setContents    : setContents,
 	    getContents    : getContents,
 	    update         : update,
@@ -41,7 +43,18 @@ export module Editor {
 
         var fCaptainsLogElm = <HTMLInputElement>root.querySelector("#captains-log");
 
-        initIde( );
+        var paletteModeSelector = <HTMLInputElement>root.querySelector("#palette-mode");
+        paletteModeSelector.onchange = paletteModeSelect;
+
+
+        var showLogCheckbox = <HTMLInputElement>root.querySelector("#show-log");
+        showLogCheckbox.onchange = displayLog;
+
+        var drawButton = <HTMLElement>root.querySelector("#draw");
+        drawButton.onclick = runCode;
+
+        setTimeout(resizeEditor, 0);
+        window.onresize = resizeEditor;
 
         return self;
 
@@ -72,6 +85,12 @@ export module Editor {
             }
         }
 
+
+	function setReadOnly ( readOnly: boolean ): void {
+	    editor.setOption( 'readOnly', readOnly );
+	}
+
+
 	function setCaptiansLog ( value: string ): void {
 		fCaptainsLogElm.value = value;
 	}
@@ -91,47 +110,29 @@ export module Editor {
                 } );
         }
 
-	function initIde ( ) {
+        function paletteModeSelect () {
+	    let mode: EndInfo;
+	    let modeString: string = paletteModeSelector.value;
 
-            setTimeout(resizeEditor, 0);
-            window.onresize = resizeEditor;
+	    if ( modeString === 'palette-by-index' )
+		mode = EndInfo.Indexes;
+	    else
+		mode = EndInfo.Counts
 
-            var paletteModeSelector = <HTMLInputElement>root.querySelector("#palette-mode");
-            paletteModeSelector.onchange = paletteModeSelect;
+	    controler.accept( EventType.PalettModeSelect, mode );
+        }
 
+        function displayLog () {
+            var showLog = showLogCheckbox.checked;
 
-            var showLogCheckbox = <HTMLInputElement>root.querySelector("#show-log");
-            showLogCheckbox.onchange = displayLog;
-
-            var drawButton = <HTMLElement>root.querySelector("#draw");
-            drawButton.onclick = runCode;
-
-            return;
-
-            function paletteModeSelect () {
-		let mode: EndInfo;
-		let modeString: string = paletteModeSelector.value;
-
-		if ( modeString === 'palette-by-index' )
-		    mode = EndInfo.Indexes;
-		else
-		    mode = EndInfo.Counts
-
-		controler.accept( EventType.PalettModeSelect, mode );
+            if (showLog) {
+                fCaptainsLogElm.style.display = "block";    
+            }
+            else {
+                fCaptainsLogElm.style.display = "none";
             }
 
-            function displayLog () {
-                var showLog = showLogCheckbox.checked;
-
-                if (showLog) {
-                    fCaptainsLogElm.style.display = "block";    
-                }
-                else {
-                    fCaptainsLogElm.style.display = "none";
-                }
-
-                resizeEditor();
-            }
+            resizeEditor();
         }
 
         function resizeEditor () {

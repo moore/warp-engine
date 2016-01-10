@@ -7,6 +7,7 @@ import {Cap} from "./Cap";
 export module Ui {
 
     export interface Ui {
+	hideEditor( hide: boolean ): void;
 	updateHistory( user:User.User ): void ;
 	update( state: any ): void ;
 	alert( message: string ): void ;
@@ -17,7 +18,8 @@ export module Ui {
         var fOpenButton      = root.querySelector( ".side-menu-open" );
         var fCloseButton     = root.querySelector( ".side-menu-close" );
         var fSideMenu        = root.querySelector( ".side-menu" );
-        var fEditorSelector  = root.querySelector("#editor-mode" );
+        var fEditorSelector  = root.querySelector( "#editor-mode" );
+	var fEditorContainer = root.querySelector( "#code-editor" );
         var fHistory         = root.querySelector( ".history" );
         var fNewDraft        = root.querySelector( ".new-draft" );
         var fCopyDraft       = root.querySelector( ".copy-draft" );
@@ -42,6 +44,7 @@ export module Ui {
 
 
         var self = {
+	    hideEditor    : hideEditor,
             updateHistory : updateHistory,
 	    update        : update,
 	    alert         : alert,
@@ -72,6 +75,15 @@ export module Ui {
 		    fTitleDiv.innerText = fTitle;
 		}
 	    }
+	}
+
+
+	function hideEditor ( hide: boolean ): void {
+	    if ( hide === true )
+		fEditorContainer.classList.add( 'hidden' );
+
+	    else 
+		fEditorContainer.classList.remove( 'hidden' );
 	}
 
 

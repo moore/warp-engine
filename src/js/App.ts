@@ -8,7 +8,7 @@ import {Draft} from "./Draft";
 import {Ui} from "./Ui";
 import {Controler} from "./Controler";
 
-import {EventType, AppState, StartState, EditorMode, StateType} from "./AppState";
+import {EventType, AppState, StartState, EditorMode, EndInfo, StateType} from "./AppState";
 
 export module App  {
 
@@ -136,6 +136,18 @@ export module App  {
 		fDisplay.setPaletMode( state.endInfo );
 	    } );
 
+	    if ( state.cap !== undefined ) {
+
+		if ( state.cap.isRead( ) !== true ) 
+		    fUi.hideEditor( false );
+
+		else {
+		    fDisplay.setPaletMode( EndInfo.Counts );
+		    fUi.hideEditor( true );
+		}
+		
+	    }
+
 	    changed( state, 'draft', ( ) => {
 		var draftData = state.draft.getData();
 
@@ -143,6 +155,7 @@ export module App  {
 
 		// BOOG should we really be setting code every time hear?
 		fEditor.setContents( draftData.code );
+		fEditor.setReadOnly( state.cap.isRead( ) );
 
 		if ( state.state === StateType.Ready && fState.draft !== undefined )
 		    save( state.cap, state.draft );
