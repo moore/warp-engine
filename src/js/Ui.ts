@@ -31,6 +31,7 @@ export module Ui {
 	var fTitle           = fTitleDiv.innerText;
 	var fShareLink       = undefined;
 	var fCatcherCallback = undefined;
+	var fDraft           = undefined;
 
         fTitleDiv.addEventListener("blur", handleBlur, true);
 
@@ -56,7 +57,7 @@ export module Ui {
 	    fControler.accept( EventType.SetTitle, fTitleDiv.innerText );
         }
 
-	function update( state: any ): void {
+	function update ( state: any ): void {
 
 	    if ( state.cap !== undefined )
 		fShareLink = makeShareLink( state.cap );
@@ -68,6 +69,7 @@ export module Ui {
 	    }
 
 	    if ( state.draft !== undefined ) {
+		fDraft = state.draft;
 		let draftData = state.draft.getData();
 
 		if ( draftData.title !== fTitle ) {
@@ -113,7 +115,7 @@ export module Ui {
 
 	    Cap.newCap( ).then( ( cap ) => {
 		let draft = Draft.newDraft( );
-		fControler.accept( EventType.StartFromCap, cap );
+		fControler.accept( EventType.ReceivedCap, cap );
 		fControler.accept( EventType.ReceivedDoc, draft );
 		// BUG: dose not check if users is undefined
 		fControler.accept( EventType.ReceivedUser, oldState.user );
@@ -127,9 +129,9 @@ export module Ui {
 
 	    Cap.newCap( ).then( ( cap ) => {
 		// BUG: dose not check if draft is undefined
-		let title = oldState.draft.getData().title + " (copy)";
-		let draft = oldState.draft.setTitle( title );
-		fControler.accept( EventType.StartFromCap, cap );
+		let title = fTitle + " (copy)";
+		let draft = fDraft.setTitle( title );
+		fControler.accept( EventType.ReceivedCap, cap );
 		fControler.accept( EventType.ReceivedDoc, draft );
 		// BUG: dose not check if users is undefined
 		fControler.accept( EventType.ReceivedUser, oldState.user );

@@ -6,13 +6,12 @@ import {ObjectHelpers} from "./ObjectHelpers";
 
 export enum EventType {
     ReceivedDoc,
+    ReceivedCap,
     DocSaved,
-    NewDoc,
     ReceivedUser,
     UserSaved,
     ScriptResult,
     SetTitle,
-    StartFromCap,
     PalettModeSelect,
     InvalidCap,
     UpdateDraft,
@@ -32,7 +31,6 @@ export enum EndInfo {
 export enum StateType {
     Error,
     Start,
-    Init,
     Ready,
 }
 
@@ -77,91 +75,45 @@ export module StartState {
 	    user       : undefined,
 	    draft      : undefined,
 	    log        : undefined,
-	    editorMode : EditorMode.Default,
-	    endInfo    : EndInfo.Indexes,
-	    accptor    : accptor,
-	};
-    }
-
-    function accptor ( controler: Controler.Controler<EventType>, state: AppState, event: EventType, data: any ): AppState {
-	if ( event === EventType.StartFromCap ) {
-	    return InitState.make( <Cap.Cap>data );
-	}
-
-	else if ( event === EventType.NewDoc ) {
-	    return InitState.make( <Cap.Cap>data );
-	}
-
-	else if ( event === EventType.InvalidCap ) {
-	    return ErrorState.make( <string>data );
-	}
-
-	else {
-	    console.log( "undexpected event: ", event, data );
-	    return state;
-	}
-
-    }
-
-}
-
-export module InitState {
-    export function make ( cap: Cap.Cap ) : AppState {
-	return {
-	    state      : StateType.Init,
-	    cap        : cap,
-	    user       : undefined,
-	    draft      : undefined,
-	    log        : undefined,
-	    editorMode : EditorMode.Default,
-	    endInfo    : EndInfo.Indexes,
+	    editorMode : undefined,
+	    endInfo    : undefined,
 	    accptor    : accptor,
 	};
     }
 
     function accptor ( controler: Controler.Controler<EventType>, state: AppState, event: EventType, data: any ): AppState {
 
-	if ( event === EventType.ReceivedUser ) {
-	    let user = data;
-	    
-	    if ( state.draft !== undefined )
-		user = user.addDocument( state.draft.getData().title, state.cap )
+	if ( event === EventType.ReceivedCap )
+	    state = ObjectHelpers.update( state, { cap: data } );
 
-	    state = ObjectHelpers.update( state, { user: user } );
-	}
+	else if ( event === EventType.ReceivedUser )
+	    state = ObjectHelpers.update( state, { user: data } );
 
-	else if ( event === EventType.ReceivedDoc ) {
+	else if ( event === EventType.ReceivedDoc )
+	    state = ObjectHelpers.update( state, { draft: data } );
 
-	    if ( state.user === undefined ) 
-		state = ObjectHelpers.update( state, { draft: data } );
+	else if ( event === EventType.InvalidCap )
+	    state = ErrorState.make( <string>data );
 
-	    else {
-		let user = state.user.addDocument( data.getData().title, state.cap )
-
-		state = ObjectHelpers.update( state, { user: user, draft: data } );
-	    }
-	}
-
-	else {
+	else
 	    console.log( "undexpected event: ", event, data );
-	}
-
-
-	if ( state.draft !== undefined && state.user !== undefined )
-	    state = ReadyState.make( state.cap, state.user,
-				     state.draft );
+	
+	if ( state.cap !== undefined 
+	     && state.user !== undefined
+	     && state.draft !== undefined )
+	    state = ReadyState.make( state.cap, state.user, state.draft );
 
 	return state;
-
-        function updateUser ( data ) {
-	    controler.accept( EventType.ReceivedUser, data );
-        }
     }
+
 }
 
 
 export module ReadyState {
     export function make ( cap: Cap.Cap, user: User.User, draft: Draft.Draft ) : AppState {
+
+	user = user.addDocument( draft.getData().title, cap );
+
 	return {
 	    state      : StateType.Ready,
 	    cap        : cap,

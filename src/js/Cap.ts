@@ -14,8 +14,10 @@ export module Cap  {
 	
 	var fCapStruct = parseCap( capString );
 
-	if ( fCapStruct === undefined )
+	if ( fCapStruct === undefined ) {
+	    console.log( "can't parse cap", capString );
 	    return Promise.resolve( undefined );
+	}
 
 	return initCap( fCapStruct );
     }
@@ -69,7 +71,6 @@ export module Cap  {
 	}
 
 	function toString ( ) {
-	    // BOOG: should have version in hear!!!
 	    return "1:" + fCapStruct.mode + ":" + encodeKey( fCapStruct.key );
 	}
 	

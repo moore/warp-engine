@@ -166,6 +166,19 @@ div.color-swatch {
 .side-menu.open-state {
     left : 0px;
     padding-left: 10px;
+    animation-duration: 0.25s;
+    animation-name: slidein;
+}
+
+
+@keyframes slidein {
+  from {
+    left : -200px;
+  }
+
+  to {
+    left : 0px;
+  }
 }
 
 .side-menu-header {

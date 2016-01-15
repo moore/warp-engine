@@ -8,7 +8,7 @@ export module User  {
     export interface User {
 	addDocument( title: string, cap: Cap.Cap ): User;
 	getHistory( ): any;
-	save( store: Store.Store ): Promise<User>;
+	save( store: Store.Store ): Promise<any>; //BUG: add better type
     }
 
     interface Entry {
@@ -21,24 +21,33 @@ export module User  {
 
     interface UserRecord {
 	format  : number;
+	serial  : number;
 	name    : string;
 	editor  : string;
 	history : Array<Entry>;
     }
 
 
-    export function factory ( fCap ) : Promise<User> {
-	return load( fCap ).then( ( userRecord ) => {
-	    var fUserRecord: UserRecord;
+    export function factory ( fCap, store ) : Promise<User> {
 
-	    if ( userRecord === undefined )
-		fUserRecord = newUser();
+	return store.load( fCap )
+	    .then( ( result ) => {
+		if ( result.code !== 'ok' )
+		    return Promise.reject( result );
 
-	    else
-		fUserRecord = userRecord;
-	    
-	    return init( fCap, fUserRecord );
-	} );
+		let userRecord = JSON.parse( result.data.Data );
+		let user       = init( fCap, userRecord );
+
+		return Promise.resolve( user );
+
+	    } )
+	    .catch( ( result ) => {
+		if ( result.code !== 'no-record' )		
+		    return Promise.reject( result.reason );
+
+		let user = init( fCap, newUser() );
+		return Promise.resolve( user );
+	    } );
     }
 
 
@@ -79,10 +88,13 @@ export module User  {
 	    return fUserRecord.history;
 	}
 
-	function save ( store: Store.Store ): Promise<User> {
-	    var data = JSON.stringify( fUserRecord );
-	    localStorage.setItem( 'UserRecord', data );
-	    return Promise.resolve( self );
+	function save ( store: Store.Store ): Promise<any> {
+
+	    let userString = JSON.stringify( fUserRecord );
+	    let serial      = fUserRecord.serial;
+	    let dataType    = 'UserRecord';
+		
+            return store.save( fCap, serial, dataType, userString );
 	}
     }
 
@@ -131,6 +143,7 @@ export module User  {
 
 	let newRecord: UserRecord  = {
 	    format  : 1,
+	    serial  : userRecord.serial + 1,
 	    name    : userRecord.name,
 	    editor  : userRecord.editor,
 	    history : newHistory,
@@ -140,19 +153,10 @@ export module User  {
     }
 
 
-    function load ( cap : Cap.Cap ) : Promise<UserRecord> {
-	var jsonStr = localStorage.getItem( 'UserRecord' );
-
-	if ( jsonStr === null )
-	    return Promise.resolve( newUser() );
-
-	return Promise.resolve( JSON.parse( jsonStr ) );
-    }
-
-
     function newUser ( ) {
 	var user: UserRecord = {
 	    format  : 1,
+	    serial  : 1,
 	    name    : "Unknown User",
 	    editor  : "default",
 	    history : [],

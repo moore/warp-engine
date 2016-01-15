@@ -1,4 +1,6 @@
 import {ObjectHelpers} from "./ObjectHelpers";
+import {Cap} from "./Cap";
+import {Store} from "./Store";
 
 export module Draft  {
 
@@ -12,6 +14,7 @@ export module Draft  {
     }
 
     export interface Draft {
+	save( cap: Cap.Cap, store: Store.Store ): Promise<any> ;
 	update( code: string, threads: Array<number>, colors: Array<number> ): Draft;
 	setTitle( title: string ) : Draft;
 	getData( ) : DraftStruct;
@@ -70,6 +73,7 @@ export module Draft  {
 	fDraftStruct = ObjectHelpers.deepFreeze( fDraftStruct ); 
 
 	var self: Draft = {
+	    save     : save,
 	    update   : update,
 	    setTitle : setTitle,
 	    toString : toString,
@@ -77,6 +81,16 @@ export module Draft  {
 	}
 
 	return self;
+
+        function save ( cap: Cap.Cap, store: Store.Store ): Promise<any> {
+	    let draftString = self.toString();
+	    let draftData   = self.getData();
+	    let serial      = draftData.serial;
+	    let dataType    = 'DraftStruct';
+
+            return store.save( cap, serial, dataType, draftString );
+        }
+
 
 	function update( code: string, threads: Array<number>, colors: Array<number> ): Draft {
 	    var draftStruct = emptyDraft();

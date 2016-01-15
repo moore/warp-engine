@@ -95,7 +95,7 @@ func handleSet(writer http.ResponseWriter, req *http.Request) {
 	warp := Warp {
 		Serial : setWarp.Serial,
 		Key   : setWarp.Key,
-		DataType : "JavaScript",
+		DataType : setWarp.DataType,
 		Data : setWarp.Data,
 	}
 	
@@ -111,9 +111,8 @@ func handleSet(writer http.ResponseWriter, req *http.Request) {
 
                 if err != nil && err != datastore.ErrNoSuchEntity {
                         return err
-                }
-                
-		if err != datastore.ErrNoSuchEntity && existing.Serial >= warp.Serial {
+
+		} else if err == datastore.ErrNoSuchEntity && existing.Serial >= warp.Serial {
 			errorString := fmt.Sprintf("{\"code\":\"serial\", \"reason\":\"serial mismatch %v >= %v\"}", 
 				existing.Serial, warp.Serial)
 			http.Error(writer, errorString, http.StatusBadRequest)
@@ -122,19 +121,24 @@ func handleSet(writer http.ResponseWriter, req *http.Request) {
 
 		_, err = datastore.Put(context, key, &warp)
 
+
 		if err != nil {
 			return err
+		} else {
+			result := "{\"code\":\"ok\"}"
+
+			writer.Write([]byte(result))
+
+			return nil
 		}
-
-		result := "{\"result\":\"ok\"}"
-
-		writer.Write([]byte(result))
-
-                return nil
         }, nil)
 
 	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		errorString := fmt.Sprintf(
+			"{\"code\":\"internal\", \"reason\":\"%v\"}",
+			err.Error() )
+
+		http.Error(writer, errorString, http.StatusInternalServerError)
 		return
 	}
 }
@@ -149,7 +153,10 @@ func handleGet(writer http.ResponseWriter, req *http.Request) {
 	err := decoder.Decode(&getWarp)
 
 	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, 
+			"{\"code\":\"bad-request\", \"reason\":\"bad json\"}", 
+			http.StatusBadRequest)
+		return
 	}
 
 	var warp Warp
@@ -158,13 +165,30 @@ func handleGet(writer http.ResponseWriter, req *http.Request) {
 
 	getErr := datastore.Get(ctx, key, &warp);
 
-	if getErr != nil {
-		http.Error(writer, getErr.Error(), http.StatusInternalServerError)
+	if getErr == datastore.ErrNoSuchEntity {
+		errorString := fmt.Sprintf(
+			"{\"code\":\"no-record\", \"reason\":\"%v\"}",
+			getWarp.Key )
+
+		http.Error(writer, errorString, http.StatusNotFound )
+		return
+
+	} else if getErr != nil {
+		errorString := fmt.Sprintf(
+			"{\"code\":\"internal\", \"reason\":\"%v\"}",
+			err.Error() )
+
+		http.Error(writer, errorString, http.StatusInternalServerError)
 		return
 	}
 
 	warpString, _ := json.Marshal(warp)
+	
+	resultString := fmt.Sprintf(
+		"{\"code\":\"ok\", \"data\":%s}",
+		warpString )
 
-	writer.Write([]byte(warpString))
+
+	writer.Write([]byte(resultString))
 
 }

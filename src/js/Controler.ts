@@ -28,11 +28,8 @@ export module Controler {
 	return self;
 
 	function accept ( event: E, data: any ): void {
-	    console.log( "Event %s:", event, data ); //BOOG
 	    let newState = fState.accptor( self, fState, event, data );
 	    
-	    console.log( "state %s > %s", (<any>fState).state, (<any>newState).state ); //BOOG
-
 	    if ( newState === undefined )
 		console.log( "Error accptor returned undefined!" ); // BUG: we should probbly enter error state!
 

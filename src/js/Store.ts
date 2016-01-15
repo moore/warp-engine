@@ -50,9 +50,14 @@ export module Store  {
             })
                 .then(json)  
 
-            function json (response) {  
+            function json (response) {
 		return response.json().then( 
-		    function ( data ) { return { ok: response.ok, data : data } } );
+		    function ( data ) { 
+			if ( data.code === 'ok' )
+			    return Promise.resolve( { ok: response.ok, data : data } );
+			else
+			    return Promise.reject( data );
+		    } );
             } 
         }
 
@@ -72,8 +77,14 @@ export module Store  {
                 body: JSON.stringify(request) })
                 .then(json);  
 
-            function json(response) {  
-                return response.json()  
+            function json(response) {
+		return response.json().then( 
+		    function ( data ) { 
+			if ( data.code === 'ok' )
+			    return Promise.resolve( data );
+			else
+			    return Promise.reject( data );
+		    } );
             }
         }
 

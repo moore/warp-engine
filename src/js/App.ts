@@ -18,40 +18,41 @@ export module App  {
     }
 
 
-    function startApp ( controler: Controler.Controler<EventType>, store: Store.Store, capString: string ): void {
-	let cap: Cap.Cap;
-
-        let fUserCap = "BOOG";
+    function startApp ( controler: Controler.Controler<EventType>, store: Store.Store, userCap: Cap.Cap, capString: string ): void {
 
         if ( capString === '' )
 	    Cap.newCap( ).then( ( cap ) => {
 		let draft = Draft.newDraft( );
-		controler.accept( EventType.StartFromCap, cap );
+		controler.accept( EventType.ReceivedCap, cap );
 		controler.accept( EventType.ReceivedDoc, draft );
-
-		// BUG: this should not be async and should match draft API
-		User.factory( fUserCap )
-		    .then( updateUser );
-
-            });
-
-        else 
-	    Cap.capFromString( capString ).then( ( cap ) => {
-
-		if ( cap === undefined )
-		    controler.accept( EventType.InvalidCap, capString );
-
-		else {
-		    controler.accept( EventType.StartFromCap, cap );
-		    store.load( cap ).then( loadResult );
-		    
-		    User.factory( fUserCap )
-			.then( updateUser );
-
-		}
 	    });
 
+        else 
+	    Cap.capFromString( capString )
+	    .then(
+		( cap ) => {
+		    controler.accept( EventType.ReceivedCap, cap );
 
+		    store.load( cap )
+			.then( ( response ) => {
+			    let draft  = Draft.fromString( response.data.Data );
+			    controler.accept( EventType.ReceivedDoc, draft );
+			})
+			.catch( ( error ) => {
+			    controler.accept( EventType.InvalidCap, error )
+			} );
+		} )
+	    .catch(
+		( error ) => {
+		    controler.accept( EventType.InvalidCap, error ) 
+		} );
+	
+
+	// BUG: this should not be async and should match draft API
+	User.factory( userCap, store )
+	    .then( updateUser )
+	    .catch( ( err ) => console.log( "load user error:", err, userCap ) )
+	;
 
 	return;
 
@@ -59,13 +60,31 @@ export module App  {
 	    controler.accept( EventType.ReceivedUser, data );
         }
 
-        function loadResult ( data ) {
-	    let draft  = Draft.fromString( data.Data );
-	    controler.accept( EventType.ReceivedDoc, draft );
+        function loadResult ( response ) {
         }
 
     }
 
+
+
+    function getUserCap ( ): Promise<Cap.Cap> {
+
+	let capString = localStorage.getItem( 'UserCap' );
+	
+        if ( capString !== null )
+	    return Cap.capFromString( capString ).then( ( cap ) => {
+		if ( cap === undefined )
+		    return Promise.reject( capString );
+
+		return cap;
+	    });
+
+	else
+	    return Cap.newCap( ).then( ( cap ) => {
+		localStorage.setItem( 'UserCap', cap.toString() );
+		return cap;
+            });
+    }
 
     export function factory ( root : HTMLElement ) : App {
 
@@ -83,6 +102,8 @@ export module App  {
 	let fDisplay = WarpDisplay.factory( fControler, root );
 	let fUi      = Ui.factory( fControler, root, fEditor );
 
+	let fCapString;
+
 
 
 	fControler.subscribe( self );
@@ -91,7 +112,11 @@ export module App  {
         // BUG: We should make this not force reload, but we
         // will have to make sure we are reseting state properly.
         window.onhashchange = function () {
-	    capString    = location.hash.slice( 1 );
+	    capString  = location.hash.slice( 1 );
+	    
+	    if ( capString === fCapString )
+		return;
+
 	    let oldState = <AppState>fControler.reset( );
 
 	    Cap.capFromString( capString ).then( ( cap ) => {
@@ -100,30 +125,54 @@ export module App  {
 		    fControler.accept( EventType.InvalidCap, capString );
 
 		else {
-		    fControler.accept( EventType.StartFromCap, cap );
-		    fControler.accept( EventType.ReceivedUser, oldState.user );
-		    fStore.load( cap ).then( loadResult );
+		    if ( oldState.user !== undefined )
+			fControler.accept( EventType.ReceivedUser, oldState.user );
+
+		    fControler.accept( EventType.ReceivedCap, cap );
+		    fStore.load( cap )
+			.then( loadResult )
+			.catch( ( error ) => console.log( "error in load: ", error ) )
+		    ;
 		}
             });
 	    
-            //document.location.reload();
-	    function loadResult ( data ) {
-		let draft  = Draft.fromString( data.Data );
+	    return ;
+            function loadResult ( response ) {
+		let draft: Draft.Draft;
+
+		if ( response.code === 'no-record' )
+		    draft = Draft.newDraft( );
+
+		else if ( response.code === 'ok' )
+		    draft  = Draft.fromString( response.data.Data );
+
+		else
+		    return Promise.reject( response );
+
 		fControler.accept( EventType.ReceivedDoc, draft );
             }
 
         }
 
 
-	startApp( fControler, fStore, capString );
+	getUserCap( ).then( ( userCap ) => {
+	    startApp( fControler, fStore, userCap, capString );
+	} );
 
         return self;
 
 
 	function update ( state: AppState ): void {
+	    
+	    if ( state.state === StateType.Error ) {
+		fState = <AppState>fControler.reset( );
+		return;
+	    }
+	    
 
 	    changed( state, 'cap', ( ) => {
-		location.hash = state.cap.toString( ) 
+		fCapString = state.cap.toString( );
+		location.hash = fCapString;
 	    } );
 
 	    changed( state, 'user', ( ) => {
@@ -153,12 +202,16 @@ export module App  {
 
 		fDisplay.draw( draftData );
 
-		// BOOG should we really be setting code every time hear?
+		// BUG: should we really be setting code every time hear?
 		fEditor.setContents( draftData.code );
 		fEditor.setReadOnly( state.cap.isRead( ) );
 
-		if ( state.state === StateType.Ready && fState.draft !== undefined )
-		    save( state.cap, state.draft );
+		if ( state.state === StateType.Ready && fState.draft !== undefined ) {
+		    state.draft.save( state.cap, fStore )
+			.then( handleSaveResult )
+			.catch( ( data ) => console.log( "save error: ", data ) )
+			    ;
+		}
 	    } );
 
 	    if ( fState.log !== state.log )
@@ -175,17 +228,6 @@ export module App  {
 		action();
 	}
 	
-        function save ( cap, draft ) {
-	    let draftString = draft.toString();
-	    let draftData   = draft.getData();
-	    let serial      = draftData.serial;
-	    let dataType    = 'DraftStruct';
-
-            fStore.save( cap, serial, dataType, draftString )
-		.then( handleSaveResult )
-		.catch( ( data ) => console.log( "save error: ", data ) ) //BUG: tell user
-		;
-        }
 
 	function handleSaveResult ( result ) {
 	    if ( result.ok === true ) {
