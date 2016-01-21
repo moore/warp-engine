@@ -9,7 +9,7 @@ body {
     padding: 20px 60px;
 }
 
-#toolbar, .side-menu {
+#toolbar, .side-menu, .draft-title {
 	font-family: monospace; 
 	font-size: 12px; 
 	color: #666666; 

@@ -19,8 +19,8 @@ export enum EventType {
 }
 
 export enum EditorMode {
-    Vi,
     Default,
+    Vi,
 }
 
 export enum EndInfo {

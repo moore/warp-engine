@@ -34,7 +34,6 @@ export module Editor {
         var editor = CodeMirror( codeMirrorDiv, {
             value : code,
             mode:  "javascript",
-            keyMap: "vim",
             lineNumbers: true,
         });
 
