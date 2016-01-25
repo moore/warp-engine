@@ -83,6 +83,10 @@ function stretch ( factor, values ) {
     return result;
 }
 
+function pointReflect (array) {
+      return array.concat(array.slice(0, -1).reverse());
+}
+
 function plus (x, y) {
       if (y < 0)
               return minus(x, Math.abs(y));
