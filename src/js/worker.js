@@ -83,6 +83,20 @@ function stretch ( factor, values ) {
     return result;
 }
 
+function plus (x, y) {
+      if (y < 0)
+              return minus(x, Math.abs(y));
+        if ((x < 1) || (x > 8))
+                log("unexpected value for x: " + x);
+          return (x + y - 1) % 8 + 1;
+}
+
+function minus (x, y) {
+      if ((x < 1) || (x > 8))
+              log("unexpected value for x: " + x);
+        return ( (x - 1) + ( 8 - y % 8 ) )% 8 + 1;
+}
+
 function logWif () {
 
     log("Version=1.1\nSource Program=WarpEngine\nSource Version=1.0\nDate=December 4, 2015\n");
