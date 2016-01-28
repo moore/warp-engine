@@ -29,6 +29,7 @@
           var result = message.data;
           result.code = event.data;
           mainWindow.postMessage( message.data, event.origin );
+          console.log(message);
         };
 
         worker.postMessage( event.data );

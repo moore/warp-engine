@@ -101,6 +101,14 @@ function minus (x, y) {
         return ( (x - 1) + ( 8 - y % 8 ) )% 8 + 1;
 }
 
+function collapse (line, shafts) {
+      var result = [];
+        for (var i = 0; i < line.length; i++) {
+                result.push(((line[i]-1) % shafts) + 1);
+                  }
+          return result;
+}
+
 function logWif () {
 
     log("Version=1.1\nSource Program=WarpEngine\nSource Version=1.0\nDate=December 4, 2015\n");
