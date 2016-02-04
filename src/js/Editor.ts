@@ -1,6 +1,6 @@
 /// <reference path="typings/codemirror/codemirror.d.ts" />
 import {Sandbox} from "./Sandbox";
-import { EventType, EndInfo} from "./AppState";
+import { EventType, EndInfo, AppControler} from "./AppState";
 
 
 import {Controler} from "./Controler";
@@ -16,7 +16,7 @@ export module Editor {
 	update( state: any ): void ;
     }
 
-    export function factory ( controler: Controler.Controler<EventType>, root: HTMLElement, code : string ): Editor {
+    export function factory ( controler: AppControler, root: HTMLElement, code : string ): Editor {
 
         var self = {
             setEditorMode  : setEditorMode,
@@ -27,7 +27,7 @@ export module Editor {
 	    update         : update,
         };
         
-	controler.subscribe( self );
+	controler.subscribe( update );
 
         var codeMirrorDiv = <HTMLElement>root.querySelector("#code-mirror");
 

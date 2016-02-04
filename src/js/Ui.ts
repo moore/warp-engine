@@ -1,6 +1,6 @@
 import {Controler} from "./Controler";
 import {User} from "./User";
-import {EventType, AppState} from "./AppState";
+import {EventType, AppState, StateType, AppStruct, AppControler} from "./AppState";
 import {Draft} from "./Draft";
 import {Cap} from "./Cap";
 
@@ -9,12 +9,12 @@ export module Ui {
     export interface Ui {
 	hideEditor( hide: boolean ): void;
 	updateHistory( user:User.User ): void ;
-	update( state: any ): void ;
+	update( state: StateType, struct: AppStruct ): void ;
 	alert( message: string ): void ;
     }
 
 
-    export function factory ( fControler: Controler.Controler<EventType>, root, editor ): Ui  {
+    export function factory ( fControler: AppControler, root, editor ): Ui  {
         var fOpenButton      = root.querySelector( ".side-menu-open" );
         var fCloseButton     = root.querySelector( ".side-menu-close" );
         var fSideMenu        = root.querySelector( ".side-menu" );
@@ -57,20 +57,34 @@ export module Ui {
 	    fControler.accept( EventType.SetTitle, fTitleDiv.innerText );
         }
 
-	function update ( state: any ): void {
+	function update ( state: StateType, struct: AppStruct ): void {
 
-	    if ( state.cap !== undefined )
-		fShareLink = makeShareLink( state.cap );
+            if ( struct.draft !== undefined
+                 && struct.draft.cap !== undefined ) {
 
-	    if ( state.user !== fUser ) {
-		fUser = state.user;
+		fShareLink = makeShareLink( struct.draft.cap );
+
+                if ( struct.draft.cap.isRead( ) !== true ) 
+                    hideEditor( false );
+
+                else {
+                    hideEditor( true );
+                }
+                
+            }
+
+
+	    if ( struct.user !== fUser ) {
+		fUser = struct.user;
 		if ( fUser !== undefined )
 		    updateHistory( fUser );
 	    }
 
-	    if ( state.draft !== undefined ) {
-		fDraft = state.draft;
-		let draftData = state.draft.getData();
+	    if ( struct.draft !== undefined 
+                 && struct.draft.doc !== undefined ) {
+
+		fDraft = struct.draft;
+		let draftData = struct.draft.doc;
 
 		if ( draftData.title !== fTitle ) {
 		    fTitle = draftData.title;
@@ -111,31 +125,15 @@ export module Ui {
 
 
 	function handleNewDraft ( ) {
-	    let oldState = <AppState>fControler.reset( );
-
-	    Cap.newCap( ).then( ( cap ) => {
-		let draft = Draft.newDraft( );
-		fControler.accept( EventType.ReceivedCap, cap );
-		fControler.accept( EventType.ReceivedDoc, draft );
-		// BUG: dose not check if users is undefined
-		fControler.accept( EventType.ReceivedUser, oldState.user );
-            });
-
+	    Cap.newCap( ).then(
+                ( cap ) => fControler.accept( EventType.NewDraft, cap ) );
 	}
 
 
 	function handleCopyDraft ( ) {
-	    let oldState = <AppState>fControler.reset( );
+	    Cap.newCap( ).then(
+                ( cap ) => fControler.accept( EventType.CopyDraft, cap ) );
 
-	    Cap.newCap( ).then( ( cap ) => {
-		// BUG: dose not check if draft is undefined
-		let title = fTitle + " (copy)";
-		let draft = fDraft.setTitle( title );
-		fControler.accept( EventType.ReceivedCap, cap );
-		fControler.accept( EventType.ReceivedDoc, draft );
-		// BUG: dose not check if users is undefined
-		fControler.accept( EventType.ReceivedUser, oldState.user );
-            });
 	}
 
 	

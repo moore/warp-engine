@@ -1,8 +1,8 @@
 import {Cap} from "./Cap";
 import {User} from "./User";
-import {Draft} from "./Draft";
-import {Controler} from "./Controler";
+import {DraftStruct} from "./Draft";
 import {ObjectHelpers} from "./ObjectHelpers";
+import {Controler} from "./Controler";
 
 export enum EventType {
     ReceivedDoc,
@@ -15,7 +15,10 @@ export enum EventType {
     PalettModeSelect,
     InvalidCap,
     UpdateDraft,
+    DraftChanged,
     RuntimeError,
+    NewDraft,
+    CopyDraft,
 }
 
 export enum EditorMode {
@@ -34,123 +37,111 @@ export enum StateType {
     Ready,
 }
 
-export interface AppState {
-    state      : StateType;
-    cap        : Cap.Cap;
+export interface AppStruct {
     user       : User.User;
-    draft      : Draft.Draft;
+    draft      : DraftStruct;
     log        : string;
     editorMode : EditorMode;
     endInfo    : EndInfo;
-    accptor( controler: Controler.Controler<EventType>, state: AppState, event: EventType, data: any ): AppState; 
 }
 
 
+
+export type AppState     = Controler.State<StateType,EventType,AppStruct>;
+export type AppControler = Controler.Controler<StateType,EventType,AppStruct>;
+
 export module ErrorState {
     export function make ( log: string ) : AppState {
-	return {
-	    state      : StateType.Error,
-	    cap        : undefined,
-	    user       : undefined,
-	    draft      : undefined,
-	    log        : log,
-	    editorMode : EditorMode.Default,
-	    endInfo    : EndInfo.Indexes,
-	    accptor    : accptor,
-	};
+        return Controler.makeState(
+            StateType.Error, accptor, { 
+	        user       : undefined,
+	        draft      : undefined,
+	        log        : log,
+	        editorMode : EditorMode.Default,
+	        endInfo    : EndInfo.Indexes,
+            } );
     }
 
-    function accptor ( controler: Controler.Controler<EventType>, state: AppState, event: EventType, data: any ): AppState {
+    function accptor ( state: StateType, struct: AppStruct, event: EventType, data: any ): AppState {
 
-	return state;
+	return undefined;
     }
 }
 
 
 export module StartState {
     export function make ( ): AppState {
-	return {
-	    state      : StateType.Start,
-	    cap        : undefined,
-	    user       : undefined,
-	    draft      : undefined,
-	    log        : undefined,
-	    editorMode : undefined,
-	    endInfo    : undefined,
-	    accptor    : accptor,
-	};
-    }
+        return Controler.makeState(
+            StateType.Start, accptor, { 
+	        user       : undefined,
+	        draft      : undefined,
+	        log        : undefined,
+	        editorMode : undefined,
+	        endInfo    : undefined,
+	    } );
+    } 
 
-    function accptor ( controler: Controler.Controler<EventType>, state: AppState, event: EventType, data: any ): AppState {
+    function accptor ( state: StateType, struct: AppStruct, event: EventType, data: any ): AppState {
 
-	if ( event === EventType.ReceivedCap )
-	    state = ObjectHelpers.update( state, { cap: data } );
+	if ( event === EventType.ReceivedUser )
+	    struct = ObjectHelpers.update( struct, { user: data } );
 
-	else if ( event === EventType.ReceivedUser )
-	    state = ObjectHelpers.update( state, { user: data } );
-
-	else if ( event === EventType.ReceivedDoc )
-	    state = ObjectHelpers.update( state, { draft: data } );
+	else if ( event === EventType.DraftChanged )
+	    struct = ObjectHelpers.update( struct, { draft: data } );
 
 	else if ( event === EventType.InvalidCap )
-	    state = ErrorState.make( <string>data );
+	    return ErrorState.make( <string>data );
 
 	else
 	    console.log( "undexpected event: ", event, data );
 	
-	if ( state.cap !== undefined 
-	     && state.user !== undefined
-	     && state.draft !== undefined )
-	    state = ReadyState.make( state.cap, state.user, state.draft );
+	if ( struct.draft !== undefined
+             && struct.draft.cap !== undefined 
+	     && struct.user !== undefined
+	     && struct.draft.doc !== undefined )
+	    return ReadyState.make( struct.user, struct.draft );
 
-	return state;
+
+        return Controler.makeState( state, accptor, struct ); 
     }
 
 }
 
 
 export module ReadyState {
-    export function make ( cap: Cap.Cap, user: User.User, draft: Draft.Draft ) : AppState {
+    export function make ( user: User.User, draft: DraftStruct ) : AppState 
+    {
+	user = user.addDocument( draft.doc.title, draft.cap );
 
-	user = user.addDocument( draft.getData().title, cap );
-
-	return {
-	    state      : StateType.Ready,
-	    cap        : cap,
+        return Controler.makeState(
+            StateType.Ready, accptor, { 
 	    user       : user,
 	    draft      : draft,
 	    log        : undefined,
 	    editorMode : EditorMode.Default,
 	    endInfo    : EndInfo.Indexes,
-	    accptor    : accptor,
-	};
+	    } );
     }
 
-    function accptor ( controler: Controler.Controler<EventType>, state: AppState, event: EventType, data: any ): AppState {
+    function accptor ( state: StateType, struct: AppStruct, event: EventType, data: any ): AppState {
 
-	if ( event === EventType.UpdateDraft ) {
-            let draft = state.draft.update( data.code, data.threads, data.colors ); 
-            let log   = data.captainsLog;
-	    let user  = state.user.addDocument( draft.getData().title, state.cap );
+	if ( event === EventType.RuntimeError ) 
+	    struct = ObjectHelpers.update( struct, { log: data } );
 
-	    state = ObjectHelpers.update( state, { user: user, draft: draft, log: log  } );
-	}
+        else if ( event === EventType.DraftChanged ) {
+            
+            let user = struct.user;
 
-	else if ( event === EventType.SetTitle ) {
-            let draft = state.draft.setTitle( data ); 
-	    let user  = state.user.addDocument( data, state.cap );
+            if ( data !== undefined && data.doc !== undefined && data.cap !== undefined ) 
+                user = user.addDocument( data.doc.title, data.cap );
 
-	    state = ObjectHelpers.update( state, { user: user, draft: draft } );
-	}
-
-	else if ( event === EventType.RuntimeError ) {
-	    state = ObjectHelpers.update( state, { log: data  } );
-	}
+	    struct = ObjectHelpers.update( struct, { user: user, draft: data } );
+        }
 
 	else {
 	    console.log( "undexpected event: ", event, data );
 	}
 
-	return state;
+        return Controler.makeState( state, accptor, struct ); 
     }
 }

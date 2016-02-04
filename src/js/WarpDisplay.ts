@@ -1,4 +1,6 @@
-import {Controler} from "./Controler";
+
+import {AppControler} from "./AppState";
+
 export module WarpDisplay  {
 
     export interface Display {
@@ -8,7 +10,7 @@ export module WarpDisplay  {
     }
 
 
-    export function factory<E> ( controler: Controler.Controler<E>, root: HTMLElement ) : Display {
+    export function factory ( controler: AppControler, root: HTMLElement ) : Display {
 	
 	var container = <HTMLElement>root.querySelector("#code-output");
 	var canvas    = <HTMLCanvasElement>root.querySelector("#canvas");
@@ -36,7 +38,7 @@ export module WarpDisplay  {
 	function draw ( warp ) {
 	    var threads = warp.threads;
 	    var colors  = warp.colors;
-	    
+
 	    var threadWidth;
 	    var warpWidth;
 

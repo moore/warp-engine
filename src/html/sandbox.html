@@ -21,8 +21,8 @@
           done   = true;
         }
       
-        var worker = new Worker( "worker.js" );
-        done       = false;
+        worker = new Worker( "worker.js" );
+        done   = false;
       
         worker.onmessage = function ( message ) {
           done = true;

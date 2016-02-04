@@ -1,148 +1,370 @@
 import {ObjectHelpers} from "./ObjectHelpers";
 import {Cap} from "./Cap";
 import {Store} from "./Store";
+import {Controler} from "./Controler";
+
+
+export enum DraftState {
+    Start,
+    Loading,
+    Ready,
+    NotFound,
+    LoadError,
+    SaveError,
+}
+
+export enum DraftEvent {
+    LoadCap,
+    SetCap,
+    SetDocument,
+    NewDocument,
+    CopyDocument,
+    Received,
+    NotFound,
+    Update,
+    SetTitle,
+    Saved,
+    SaveError,
+    LoadError,
+}
+
+export interface DraftDoc {
+    format  : number;
+    serial  : number;
+    title   : string;
+    threads : Array<number>;
+    colors  : Array<number>;
+    code    : string;
+    log     : string;
+}
+
+export interface DraftStruct {
+    cap     : Cap.Cap;
+    saved   : boolean;
+    doc     : DraftDoc;
+}
+
+
 
 export module Draft  {
 
-    export interface DraftStruct {
-	format  : number;
-	serial  : number;
-	title   : string;
-	threads : Array<number>;
-	colors  : Array<number>;
-	code    : string;
-    }
+    export type Draft = Controler.State<DraftState,DraftEvent,DraftStruct>;
 
-    export interface Draft {
-	save( cap: Cap.Cap, store: Store.Store ): Promise<any> ;
-	update( code: string, threads: Array<number>, colors: Array<number> ): Draft;
-	setTitle( title: string ) : Draft;
-	getData( ) : DraftStruct;
-	toString( ) : string;
-    }
+    export type DraftControler = Controler.Controler<DraftState,DraftEvent,DraftStruct>;
 
-    
-    export function newDraft ( ) : Draft {
-	var draftStruct = emptyDraft();
-
-	return init( draftStruct );
+    export function StartState( ): Controler.State<DraftState,DraftEvent,DraftStruct> {
+        let struct = {
+            cap     : undefined,
+            saved   : true,
+            doc     : undefined,
+        }
+;
+        return Controler.makeState( DraftState.Start, startAccptor, struct )
     }
 
 
-    export function fromString ( draftString : string ) : Draft {
+    function startAccptor ( state: DraftState, struct: DraftStruct, event: DraftEvent, data: any ): Draft {
+        let result: Draft;
 
-	// Bug: I think this should be removed. It only serves
-	// to handle a type error elsewhere.
-	if ( draftString === "" )
-	    return newDraft();
+        if ( event === DraftEvent.LoadCap )
+            result = Controler.makeState(
+                DraftState.Loading, loadingAccptor, { 
+                    cap     : <Cap.Cap>data,
+                    saved   : true,
+                    doc     : undefined,
+                } );
 
-	var parsed = JSON.parse( draftString );
+        else if ( event === DraftEvent.SetDocument )
+            result = Controler.makeState(
+                DraftState.Ready, readyAccptor, { 
+                    cap     : data.cap,
+                    saved   : true,
+                    doc     : data.doc,
+                } );
 
-	var draftStruct = emptyDraft();
+        else if ( event === DraftEvent.NewDocument )
+            result = Controler.makeState(
+                DraftState.Ready, readyAccptor, { 
+                    cap     : <Cap.Cap>data,
+                    saved   : false,
+                    doc     : emptyDraft(),
+                } );
 
-	if ( typeof( parsed.format ) !== "number" )
-	    return error( "serial is not number" );
+        else
+            console.log( "undexpected event: ", event, data );
 
-	if ( typeof( parsed.serial ) !== "number" )
-	    return error( "serial is not number" );
 
-	if ( typeof( parsed.title ) !== "string" )
-	    return error( "serial is not string" );
+        return result;
+    }
 
-	if ( Array.isArray( parsed.threads ) !== true )
-	    return error( "threads is not Array" );
 
-	if ( Array.isArray( parsed.colors ) !== true )
-	    return error( "colors is not Array" );
 
-	if ( typeof( parsed.code ) !== "string" )
-	    return error( "code is not string" );
+    function loadingAccptor ( state: DraftState, struct: DraftStruct, event: DraftEvent, data: any ): Draft {
+        let result: Draft;
 
-	draftStruct.serial  = parsed.serial;
-	draftStruct.title   = parsed.title;
-	draftStruct.threads = parsed.threads;
-	draftStruct.colors  = parsed.colors;
-	draftStruct.code    = parsed.code;
+        if ( event === DraftEvent.Received )
+            result = Controler.makeState(
+                DraftState.Ready, readyAccptor, { 
+                    cap    : struct.cap,
+                    saved  : true,
+                    doc    : data,
+                } );
 
-	return init( draftStruct );
+        else if ( event === DraftEvent.NotFound )
+            result = Controler.makeState(
+                DraftState.NotFound, stopAccptor, struct );
+
+        else if ( event === DraftEvent.LoadError )
+            result = Controler.makeState( 
+                DraftState.LoadError, stopAccptor, struct );
+
+        else
+            console.log( "undexpected event: ", event, data );
+        
+
+        return result;
+    }
+
+
+
+
+                                    
+    function readyAccptor ( state: DraftState, struct: DraftStruct, event: DraftEvent, data: any ): Draft {
+        let result: Draft;
+
+        if ( event === DraftEvent.Saved )
+            result = Controler.makeState(
+                DraftState.Ready, readyAccptor, { 
+                    cap    : struct.cap,
+                    saved  : true,
+                    doc    : struct.doc,
+                } );
+
+        else if ( event === DraftEvent.SaveError )
+            result = Controler.makeState(
+                DraftState.SaveError, stopAccptor, {
+                    cap    : data,
+                    saved  : false,
+                    doc    : struct.doc,
+                } );
+
+        else if ( event === DraftEvent.SetCap )
+            result = Controler.makeState(
+                DraftState.Ready, readyAccptor, { 
+                    cap    : data,
+                    saved  : false,
+                    doc    : struct.doc,
+                } );
+
+        else if ( event === DraftEvent.Update ) {
+            let doc = ObjectHelpers.update( struct.doc, data );
+            doc.serial++;
+
+            result = Controler.makeState(
+                DraftState.Ready, readyAccptor, { 
+                    cap    : struct.cap,
+                    saved  : false,
+                    doc    : doc,
+                } );
+        }
+
+        else if ( event === DraftEvent.SetTitle ) {
+            let doc = ObjectHelpers.update( struct.doc, { title: data } );
+            doc.serial++;
+
+            result = Controler.makeState(
+                DraftState.Ready, readyAccptor, { 
+                    cap    : struct.cap,
+                    saved  : false,
+                    doc    : doc,
+                } );
+        }
+
+        else if ( event === DraftEvent.NewDocument )
+            result = Controler.makeState(
+                DraftState.Ready, readyAccptor, { 
+                    cap     : <Cap.Cap>data,
+                    saved   : false,
+                    doc     : emptyDraft(),
+                } );
+
+        else if ( event === DraftEvent.CopyDocument ) {
+            let newTitle = struct.doc.title + " (copy)";
+            let doc = ObjectHelpers.update( struct.doc, { serial: 1, title: newTitle } );
+
+            result = Controler.makeState(
+                DraftState.Ready, readyAccptor, { 
+                    cap     : <Cap.Cap>data,
+                    saved   : false,
+                    doc     : doc,
+                } );
+        }
+
+        else if ( event === DraftEvent.LoadCap )
+            result = Controler.makeState(
+                DraftState.Loading, loadingAccptor, { 
+                    cap     : <Cap.Cap>data,
+                    saved   : true,
+                    doc     : undefined,
+                } );
+        else
+            console.log( "undexpected event: ", event, data );
+        
+
+        return result;
+    }
+
+   
+
+    function stopAccptor ( state: DraftState, struct: DraftStruct, event: DraftEvent, data: any ): Draft {
+        return undefined;
+    }
+
+
+    export function DraftActor ( fControler: DraftControler, fStore: Store.Store ): {} {
+        
+        fControler.subscribe( update );
+        let fStruct: DraftStruct;
+
+        return {};
+        
+
+        function update ( state: DraftState, struct: DraftStruct ) {
+            if ( state === DraftState.Loading )
+                loadingActor( fStruct, struct, fStore, fControler );
+
+            else if ( state === DraftState.Ready )
+                readyActor( fStruct, struct, fStore, fControler );
+
+            // else nothing
+
+            fStruct = struct;
+        }
+    }
+
+ 
+    function loadingActor ( oldStruct: DraftStruct, newStruct: DraftStruct, store: Store.Store, controler: DraftControler ) {
+        store.load( newStruct.cap )
+ 	    .then( ( response ) => {
+
+		if ( response.code === 'ok' )
+		    controler.accept( DraftEvent.Received, fromString( response.data.Data ) );
+
+		else if ( response.code === 'no-record' )
+		    controler.accept( DraftEvent.NotFound, response.data );
+
+                else
+		    controler.accept( DraftEvent.LoadError, response.data );
+
+	    })
+	    .catch( ( error ) => {
+		controler.accept( DraftEvent.LoadError, error );
+	    } );
+
+    }
+
+
+    function readyActor ( oldStruct: DraftStruct, newStruct: DraftStruct,
+                          store: Store.Store, controler: DraftControler ) {
+
+        if ( oldStruct === undefined || oldStruct.doc !== newStruct.doc ) {
+            let cap         = newStruct.cap;
+            let serial      = newStruct.doc.serial;
+            let dataType    = 'DraftStruct';
+            let draftString = toString( newStruct.doc );
+
+            store.save( cap, serial, dataType, draftString )
+                .then( ( result ) => {
+	            if ( result.ok === true )
+		        controler.accept( DraftEvent.Saved, true );
+
+                    /*
+	              else if ( result.data.code === 'serial' ) {
+		      fUi.alert( "The draft appears to be open in another tab.\n"
+		      + "Try switching to other tab or reloading to "
+		      + "allow editing." );
+	              }
+                    */
+
+                });
+        }
+
+    }
+
+
+    function fromString ( draftString : string ) : DraftDoc {
+
+        var parsed = JSON.parse( draftString );
+
+        if ( parsed.format !== 1 )
+            return error( "format is not 1" );
+
+        if ( typeof( parsed.serial ) !== "number" )
+            return error( "serial is not number" );
+
+        if ( typeof( parsed.title ) !== "string" )
+            return error( "title is not string" );
+
+        if ( Array.isArray( parsed.threads ) !== true )
+            return error( "threads is not Array" );
+
+        if ( Array.isArray( parsed.colors ) !== true )
+            return error( "colors is not Array" );
+
+        if ( typeof( parsed.code ) !== "string" )
+            return error( "code is not string" );
+
+        if ( typeof( parsed.log ) !== "string" )
+            return error( "log is not string" );
+
+        return {
+            format  : 1,
+            serial  : parsed.serial,
+            title   : parsed.title,
+            threads : parsed.threads,
+            colors  : parsed.colors,
+            code    : parsed.code,
+            log     : parsed.log,
+        };
     }    
 
 
-    function init ( fDraftStruct: DraftStruct ) : Draft {
-	
-	fDraftStruct = ObjectHelpers.deepFreeze( fDraftStruct ); 
 
-	var self: Draft = {
-	    save     : save,
-	    update   : update,
-	    setTitle : setTitle,
-	    toString : toString,
-	    getData  : getData,
-	}
+    function load ( cap: Cap.Cap, store: Store.Store ): Promise<Draft> {
+        return <Promise<Draft>>store.load( cap )
+            .then( result => fromString( result ) )
+        ;
+    }
+    
+    function save ( struct: DraftStruct, store: Store.Store ): Promise<any> {
+        let cap         = struct.cap;
+        let serial      = struct.doc.serial;
+        let dataType    = 'DraftStruct';
+        let draftString = toString( struct.doc );
 
-	return self;
+        return store.save( cap, serial, dataType, draftString );
+    }
 
-        function save ( cap: Cap.Cap, store: Store.Store ): Promise<any> {
-	    let draftString = self.toString();
-	    let draftData   = self.getData();
-	    let serial      = draftData.serial;
-	    let dataType    = 'DraftStruct';
-
-            return store.save( cap, serial, dataType, draftString );
-        }
-
-
-	function update( code: string, threads: Array<number>, colors: Array<number> ): Draft {
-	    var draftStruct = emptyDraft();
-
-	    draftStruct.serial  = fDraftStruct.serial + 1;
-	    draftStruct.title   = fDraftStruct.title;
-	    draftStruct.threads = threads;
-	    draftStruct.colors  = colors;
-	    draftStruct.code    = code;
-	    
-	    return init( draftStruct );
-	}
-
-
-	function setTitle( title: string ) : Draft {
-	    var draftStruct = emptyDraft();
-
-	    draftStruct.serial  = fDraftStruct.serial + 1;
-	    draftStruct.title   = title;
-	    draftStruct.threads = fDraftStruct.threads;
-	    draftStruct.colors  = fDraftStruct.colors;
-	    draftStruct.code    = fDraftStruct.code;
-	    
-	    return init( draftStruct );
-	}
-
-	
-	function toString( ) : string {
-	    return JSON.stringify( fDraftStruct );
-	}
-
-	function getData ( ) : DraftStruct {
-	    return fDraftStruct;
-	}
+    
+    function toString( struct: DraftDoc ) : string {
+        return JSON.stringify( struct );
     }
 
 
     function error ( reason: string ) : any {
-	return undefined;
+        return undefined;
     }
 
 
-    function emptyDraft ( ) : DraftStruct {
-	var draftStruct: DraftStruct = {
-	    format  : 1,
-	    serial  : 0,
-	    title   : "Untitled draft",
-	    threads : [],
-	    colors  : [],
-	    code    : '',
-	};
-
-	return draftStruct;
+    function emptyDraft ( ) : DraftDoc {
+        return {
+            format  : 1,
+            serial  : 1,
+            title   : "Untitled draft",
+            threads : [],
+            colors  : [],
+            code    : '',
+            log     : '',
+        };
     }
 }
