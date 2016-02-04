@@ -55,18 +55,11 @@ export module App  {
 
         // BUG: this should not be async and should match draft API
         User.factory( userCap, store )
-            .then( updateUser )
+            .then( data => controler.accept( EventType.ReceivedUser, data ) )
             .catch( ( err ) => console.log( "load user error:", err, userCap ) )
         ;
 
         return draftControler;
-
-
-        function updateUser ( data ) {
-            controler.accept( EventType.ReceivedUser, data );
-        }
-
-
     }
 
 
@@ -123,9 +116,6 @@ export module App  {
 
         fControler.subscribe( update );
 
-
-        // BUG: We should make this not force reload, but we
-        // will have to make sure we are reseting state properly.
         window.onhashchange = function () {
             capString  = location.hash.slice( 1 );
             
@@ -155,6 +145,8 @@ export module App  {
         function update ( state: StateType, struct: AppStruct ): void {
             
 
+            // BUG: This seems heavy handed. Also I think reset shoul
+            //      be an event possibly. Also reset should return T.
             if ( state === StateType.Error ) {
                 fStruct = fControler.reset( ).struct;
                 return;
