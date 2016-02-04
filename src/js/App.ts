@@ -132,39 +132,14 @@ export module App  {
             if ( capString === fCapString )
                 return;
 
-            let oldState = <AppState>fControler.reset( );
-
             Cap.capFromString( capString ).then( ( cap ) => {
-                
                 if ( cap === undefined )
                     fControler.accept( EventType.InvalidCap, capString );
 
-                else {
-                    if ( oldState.struct.user !== undefined )
-                        fControler.accept( EventType.ReceivedUser, oldState.struct.user );
-
-                    fControler.accept( EventType.ReceivedCap, cap );
-                }
-            });
-            
-            return ;
-            /* BOOG
-            function loadResult ( response ) {
-                let draft: Draft.Draft;
-
-                if ( response.code === 'no-record' )
-                    draft = Draft.newDraft( );
-
-                else if ( response.code === 'ok' )
-                    draft  = Draft.fromString( response.data.Data );
-
                 else
-                    return Promise.reject( response );
+                    fControler.accept( EventType.ReceivedCap, cap );
 
-                fControler.accept( EventType.ReceivedDoc, draft );
-            }
-            */
-
+            });
         }
 
 
