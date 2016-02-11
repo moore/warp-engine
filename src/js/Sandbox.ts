@@ -43,7 +43,7 @@ export module Sandbox {
                   if (event.source === sandbox.contentWindow) {
 
                       var result = event.data;
-
+                      console.log( "result: ", result );
                       if ( result.error !== undefined ) 
                           error( result.error );
 
