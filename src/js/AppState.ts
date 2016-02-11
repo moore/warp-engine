@@ -86,8 +86,9 @@ export module StartState {
 	if ( event === EventType.ReceivedUser )
 	    struct = ObjectHelpers.update( struct, { user: data } );
 
-	else if ( event === EventType.DraftChanged )
-	    struct = ObjectHelpers.update( struct, { draft: data } );
+	else if ( event === EventType.DraftChanged ) {
+	    struct = ObjectHelpers.update( struct, { draft: data.struct } );
+        }
 
 	else if ( event === EventType.InvalidCap )
 	    return ErrorState.make( <string>data );
@@ -132,10 +133,15 @@ export module ReadyState {
             
             let user = struct.user;
 
-            if ( data !== undefined && data.doc !== undefined && data.cap !== undefined ) 
-                user = user.addDocument( data.doc.title, data.cap );
+            if ( data !== undefined ) {
+                let draft = data.struct;
 
-	    struct = ObjectHelpers.update( struct, { user: user, draft: data } );
+                if (  draft !== undefined && draft.doc !== undefined && draft.cap !== undefined ) 
+                    user = user.addDocument( draft.doc.title, draft.cap );
+            
+
+	        struct = ObjectHelpers.update( struct, { user: user, draft: draft } );
+            }
         }
 
 	else {

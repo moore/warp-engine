@@ -14,7 +14,6 @@ export module App  {
 
 
     export interface App {
-        update( state: StateType, struct: AppStruct ): void ;
     }
 
 
@@ -86,7 +85,6 @@ export module App  {
     export function factory ( root : HTMLElement ) : App {
 
         var self = {
-            update : update,
         };
 
 
@@ -112,9 +110,11 @@ export module App  {
 
         let fCapString;
 
-
-
         fControler.subscribe( update );
+
+        getUserCap( ).then( ( userCap ) => {
+            startApp( fControler, fStore, userCap, capString );
+        } );
 
         window.onhashchange = function () {
             capString  = location.hash.slice( 1 );
@@ -133,17 +133,10 @@ export module App  {
         }
 
 
-        let fDraftControler;
-
-        getUserCap( ).then( ( userCap ) => {
-            fDraftControler = startApp( fControler, fStore, userCap, capString );
-        } );
-
         return self;
 
 
         function update ( state: StateType, struct: AppStruct ): void {
-            
 
             // BUG: This seems heavy handed. Also I think reset shoul
             //      be an event possibly. Also reset should return T.

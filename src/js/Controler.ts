@@ -76,9 +76,10 @@ export module Controler {
 	    // BUG: Using a subscription dose not feel like the 
             // right way to do this; but it easy and I can fix it later.
 	    subControler.subscribe(  
-		( stateType: S2, struct: T2 ) => accept( updateEvent, struct ) );
+		( stateType: S2, subStruct: T2 ) => { console.log( "delegate subscriber", subStruct ); //BOOG
+                                                   accept( updateEvent, { state: stateType, struct: subStruct } ) });
 	    
-            accept( updateEvent, state.struct );
+            accept( updateEvent, { state: state.state, struct: state.struct } );
 
 	    return subControler;
 	}
@@ -95,14 +96,9 @@ export module Controler {
 
 	    console.log( "receved event: ", event, data ); //BOOG
 
-            let newState: State<S,E,T>;
             let mapped = getMaped( event );
 
-            if ( mapped === undefined ) 
-	        newState = fState.accptor(
-                    fState.state, fState.struct, event, data );
-
-            else {
+            if ( mapped !== undefined ) {
                 console.log( "delegating..." ); //BOOG
 
                 if ( mapped[2] === event ) {
@@ -110,24 +106,28 @@ export module Controler {
                     return;
                 }
 
-                let subStruct = mapped[0].accept( mapped[1], data );
-                newState = fState.accptor( 
-                    fState.state, fState.struct, mapped[2], subStruct );
+                mapped[0].accept( mapped[1], data );
             }
 
+            else {
+
+	        let newState = fState.accptor(
+                    fState.state, fState.struct, event, data );
             
-	    	    
-	    if ( newState === undefined )
-		console.log( "Accptor returned undefined!" );
-            else
-            	console.log( " %s -> %s ", fState.state, newState.state ); //BOOG
+	    	
+	        if ( newState === undefined )
+		    console.log( "Accptor returned undefined!" );
+
+                else
+            	    console.log( " %s -> %s ", fState.state, newState.state ); //BOOG
 
 
-	    if ( newState !== undefined && newState !== fState )
-		updateState( newState );
+	        if ( newState !== undefined && newState !== fState )
+		    updateState( newState );
 
-            else
-                console.log( "No updateState:", newState, fState );
+                else
+                    console.log( "No updateState:", newState, fState );
+            }
 
 	}
 
