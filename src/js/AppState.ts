@@ -152,6 +152,10 @@ export module ReadyState {
             }
         }
 
+        else if ( event === EventType.PalettModeSelect ) {
+	    struct = ObjectHelpers.update( struct, { endInfo: data } );
+        }
+        
 	else {
 	    console.log( "undexpected event: ", event, data );
 	}

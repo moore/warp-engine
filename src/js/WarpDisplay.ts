@@ -1,5 +1,5 @@
 
-import {AppControler} from "./AppState";
+import {AppControler, EndInfo} from "./AppState";
 
 export module WarpDisplay  {
 
@@ -113,7 +113,7 @@ export module WarpDisplay  {
 	}
 
 	function setPaletMode ( mode ) {
-	    if ( mode === "palette-by-index") {
+	    if ( mode === EndInfo.Indexes) {
 		palette.classList.add("show-index");
 		palette.classList.remove("show-count");
 	    } else {
