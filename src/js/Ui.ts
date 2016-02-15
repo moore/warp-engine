@@ -34,7 +34,8 @@ export module Ui {
 	var fDraft           = undefined;
 
         fTitleDiv.addEventListener("blur", handleBlur, true);
-
+        fTitleDiv.addEventListener("keydown", checkEnter, true);
+        
         fOpenButton.onclick      = handleOpen;
         fCloseButton.onclick     = handleClose;
         fEditorSelector.onchange = editorSelect;
@@ -57,6 +58,18 @@ export module Ui {
 	    fControler.accept( EventType.SetTitle, fTitleDiv.innerText );
         }
 
+        function checkEnter ( event ) {
+            if (event.defaultPrevented) {
+                return; // Should do nothing if the key event was already consumed.
+            }
+
+            else if ( event.code === "Enter" ) {
+                fTitleDiv.blur()
+                // Consume the event for suppressing "double action".
+                event.preventDefault();
+            }
+        }
+        
 	function update ( state: StateType, struct: AppStruct ): void {
 
             if ( struct.draft !== undefined
