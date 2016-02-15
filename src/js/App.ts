@@ -173,9 +173,8 @@ export module App  {
                 if ( draftData !== undefined ) {
                     fDisplay.draw( draftData );
 
-                    // BUG: should we really be setting code every time hear?
-                    // Answer: No it causes a scroll to top event in code mirror
-                    fEditor.setContents( draftData.code );
+                    if ( fEditor.getContents() !== draftData.code )
+                        fEditor.setContents( draftData.code );
 
                     fEditor.setCaptiansLog( draftData.log );
                 }
