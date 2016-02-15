@@ -173,7 +173,9 @@ export module App  {
                 if ( draftData !== undefined ) {
                     fDisplay.draw( draftData );
 
-                    if ( fEditor.getContents() !== draftData.code )
+                    if ( fStruct.draft === undefined
+                         || fStruct.draft.doc === undefined
+                         || fStruct.draft.doc.code !== draftData.code )
                         fEditor.setContents( draftData.code );
 
                     fEditor.setCaptiansLog( draftData.log );

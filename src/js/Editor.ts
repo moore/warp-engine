@@ -69,7 +69,8 @@ export module Editor {
 
 
 	function setContents ( code : string ) : void {
-	    editor.getDoc().setValue( code );
+            if ( getContents() !== code )
+	        editor.getDoc().setValue( code );
 	}
 
 	function getContents ( ) : string {
