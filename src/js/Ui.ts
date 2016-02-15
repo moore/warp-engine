@@ -1,7 +1,7 @@
 import {Controler} from "./Controler";
 import {User} from "./User";
 import {EventType, AppState, StateType, AppStruct, AppControler} from "./AppState";
-import {Draft} from "./Draft";
+import {Draft, DraftState} from "./Draft";
 import {Cap} from "./Cap";
 
 export module Ui {

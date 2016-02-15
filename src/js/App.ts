@@ -4,7 +4,7 @@ import {WarpDisplay} from "./WarpDisplay";
 import {Store} from "./Store";
 import {User} from "./User";
 import {Editor} from "./Editor";
-import {Draft, DraftEvent} from "./Draft";
+import {Draft, DraftEvent, DraftState} from "./Draft";
 import {Ui} from "./Ui";
 import {Controler} from "./Controler";
 
@@ -90,14 +90,7 @@ export module App  {
 
         let state = StartState.make( );
 
-        // BUG: we should not be hardcoding the empty struct hear.
-        let fStruct: AppStruct = { 
-	        user       : undefined,
-	        draft      : undefined,
-	        log        : undefined,
-	        editorMode : EditorMode.Default,
-	        endInfo    : EndInfo.Indexes,
-        } ;
+        let fStruct: AppStruct = state.struct;
 
         let fControler = <AppControler>Controler.factory( state );
         let capString  = location.hash.slice( 1 );
@@ -147,14 +140,24 @@ export module App  {
             
             fUi.update( state, struct );
 
+            if ( struct.draftState === DraftState.SerialError )
+                fUi.alert( "The draft appears to be open in another tab.\n"
+                           + "Try switching to other tab or reloading to "
+                           + "allow editing." );
+
+            
             changed( fStruct.draft, struct.draft, 'cap', ( ) => {
                 fCapString = struct.draft.cap.toString( );
                 location.hash = fCapString;
             } );
 
             changed( fStruct, struct, 'user', ( ) => {
-                fUi.update( state, struct );
-                struct.user.save( fStore );
+                if ( fStruct.user !== undefined ) {
+                    fUi.update( state, struct );
+                    struct.user.save( fStore ).then( result => {
+                        fControler.accept( EventType.UserSaved, result.serial );
+                    } );
+                }
             } );
 
 
@@ -197,22 +200,6 @@ export module App  {
             if ( oldStruct === undefined || struct[key] !== oldStruct[key] )
                 action();
         }
-        
-
-        /* BOOG
-        function handleSaveResult ( result ) {
-            if ( result.ok === true ) {
-                // BUG: Sent saved status
-            }
-
-            else if ( result.data.code === 'serial' ) {
-                fUi.alert( "The draft appears to be open in another tab.\n"
-                                      + "Try switching to other tab or reloading to "
-                                      + "allow editing." );
-            }
-                
-        } */
-
     } 
 
 

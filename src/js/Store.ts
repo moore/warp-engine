@@ -54,6 +54,7 @@ export module Store  {
 		return response.json().then( 
 		    function ( data ) { 
 			if ( data.code === 'ok' )
+                            // BUG: why set ok hear???
 			    return Promise.resolve( { ok: response.ok, data : data } );
 			else
 			    return Promise.reject( data );

@@ -81,6 +81,9 @@ export module User  {
 
 	    let newUserRecord = addDocumentWorker( fUserRecord, title, read, write );
 
+            if ( newUserRecord === fUserRecord )
+                return self;
+            
 	    return init( fCap, newUserRecord );
 	}
 

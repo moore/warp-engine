@@ -11,6 +11,7 @@ export enum DraftState {
     NotFound,
     LoadError,
     SaveError,
+    SerialError,
 }
 
 export enum DraftEvent {
@@ -26,6 +27,7 @@ export enum DraftEvent {
     Saved,
     SaveError,
     LoadError,
+    SerialError,
 }
 
 export interface DraftDoc {
@@ -148,6 +150,15 @@ export module Draft  {
                     doc    : struct.doc,
                 } );
 
+        else if ( event === DraftEvent.SerialError ) {
+            result = Controler.makeState(
+                DraftState.SerialError, stopAccptor, {
+                    cap    : struct.cap,
+                    saved  : false,
+                    doc    : struct.doc,
+                } );
+        }
+        
         else if ( event === DraftEvent.SetCap )
             result = Controler.makeState(
                 DraftState.Ready, readyAccptor, { 
@@ -267,7 +278,8 @@ export module Draft  {
     function readyActor ( oldStruct: DraftStruct, newStruct: DraftStruct,
                           store: Store.Store, controler: DraftControler ) {
 
-        if ( oldStruct === undefined || oldStruct.doc !== newStruct.doc ) {
+        if ( oldStruct === undefined || ( oldStruct.doc !== undefined &&
+                                          oldStruct.doc !== newStruct.doc) ) {
             let cap         = newStruct.cap;
             let serial      = newStruct.doc.serial;
             let dataType    = 'DraftStruct';
@@ -276,17 +288,17 @@ export module Draft  {
             store.save( cap, serial, dataType, draftString )
                 .then( ( result ) => {
 	            if ( result.ok === true )
-		        controler.accept( DraftEvent.Saved, true );
-
-                    /*
-	              else if ( result.data.code === 'serial' ) {
-		      fUi.alert( "The draft appears to be open in another tab.\n"
-		      + "Try switching to other tab or reloading to "
-		      + "allow editing." );
-	              }
-                    */
-
-                });
+		        controler.accept( DraftEvent.Saved, result.data.serial );
+                    else
+                        console.error( "this should never happen!" );
+                })
+                .catch( error => {
+                    if ( error.code === 'serial' )
+                        controler.accept( DraftEvent.SerialError, true );
+                    else
+                        controler.accept( DraftEvent.SaveError, true );
+                })
+            ;
         }
 
     }

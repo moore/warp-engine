@@ -1,6 +1,6 @@
 import {Cap} from "./Cap";
 import {User} from "./User";
-import {DraftStruct} from "./Draft";
+import {DraftStruct, DraftState} from "./Draft";
 import {ObjectHelpers} from "./ObjectHelpers";
 import {Controler} from "./Controler";
 
@@ -39,6 +39,7 @@ export enum StateType {
 
 export interface AppStruct {
     user       : User.User;
+    draftState : DraftState;
     draft      : DraftStruct;
     log        : string;
     editorMode : EditorMode;
@@ -55,6 +56,7 @@ export module ErrorState {
         return Controler.makeState(
             StateType.Error, accptor, { 
 	        user       : undefined,
+                draftState : undefined,
 	        draft      : undefined,
 	        log        : log,
 	        editorMode : EditorMode.Default,
@@ -74,6 +76,7 @@ export module StartState {
         return Controler.makeState(
             StateType.Start, accptor, { 
 	        user       : undefined,
+                draftState : undefined,
 	        draft      : undefined,
 	        log        : undefined,
 	        editorMode : undefined,
@@ -87,7 +90,7 @@ export module StartState {
 	    struct = ObjectHelpers.update( struct, { user: data } );
 
 	else if ( event === EventType.DraftChanged ) {
-	    struct = ObjectHelpers.update( struct, { draft: data.struct } );
+	    struct = ObjectHelpers.update( struct, { draftstate: data.state, draft: data.struct } );
         }
 
 	else if ( event === EventType.InvalidCap )
@@ -100,7 +103,7 @@ export module StartState {
              && struct.draft.cap !== undefined 
 	     && struct.user !== undefined
 	     && struct.draft.doc !== undefined )
-	    return ReadyState.make( struct.user, struct.draft );
+	    return ReadyState.make( struct.user, struct.draftState, struct.draft );
 
 
         return Controler.makeState( state, accptor, struct ); 
@@ -110,13 +113,14 @@ export module StartState {
 
 
 export module ReadyState {
-    export function make ( user: User.User, draft: DraftStruct ) : AppState 
+    export function make ( user: User.User, draftState: DraftState, draft: DraftStruct ) : AppState 
     {
 	user = user.addDocument( draft.doc.title, draft.cap );
 
         return Controler.makeState(
             StateType.Ready, accptor, { 
 	    user       : user,
+            draftState : draftState,
 	    draft      : draft,
 	    log        : undefined,
 	    editorMode : EditorMode.Default,
@@ -136,11 +140,15 @@ export module ReadyState {
             if ( data !== undefined ) {
                 let draft = data.struct;
 
-                if (  draft !== undefined && draft.doc !== undefined && draft.cap !== undefined ) 
+                if (  data.state === DraftState.Ready
+                      && draft !== undefined
+                      && draft.doc !== undefined
+                      && draft.cap !== undefined ) 
                     user = user.addDocument( draft.doc.title, draft.cap );
             
 
-	        struct = ObjectHelpers.update( struct, { user: user, draft: draft } );
+	        struct = ObjectHelpers.update( struct, {
+                    user: user, draftState: data.state, draft: draft } );
             }
         }
 
