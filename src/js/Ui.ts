@@ -21,6 +21,7 @@ export module Ui {
         var fEditorSelector  = root.querySelector( "#editor-mode" );
 	var fEditorContainer = root.querySelector( "#code-editor" );
         var fHistory         = root.querySelector( ".history" );
+        var fArcive          = root.querySelector( ".arcive" );
         var fNewDraft        = root.querySelector( ".new-draft" );
         var fCopyDraft       = root.querySelector( ".copy-draft" );
         var fShareDraft      = root.querySelector( ".share-draft" );
@@ -196,8 +197,20 @@ export module Ui {
 
             fHistory.innerHTML = "";
 
-            for ( let i = 0; i < history.length ; i++ )
-                fHistory.appendChild( historyEntry( history[i] ) );
+            for ( let i = 0; i < history.length ; i++ ) {
+                let entry = history[i];
+                if ( entry.hidden !== true )
+                    fHistory.appendChild( historyEntry( entry ) );
+            }
+
+            fArcive.innerHTML = "";
+
+            for ( let i = 0; i < history.length ; i++ ) {
+                let entry = history[i];
+                if ( entry.hidden === true )
+                    fArcive.appendChild( historyEntry( entry ) );
+            }
+
         }
 
         function historyEntry ( data ) {
@@ -216,6 +229,17 @@ export module Ui {
             anchor.appendChild( title );
             entry.appendChild( anchor );
 
+            let arcive     = document.createElement("button");
+            let arciveText = document.createTextNode( "x" );
+
+            arcive.onclick = function () {
+                fControler.accept( EventType.HideHistoryEntry, data.read ) ;
+            }
+
+            arcive.classList.add("arcive-button");
+            
+            arcive.appendChild( arciveText );
+            entry.appendChild( arcive );
             return entry;
         }
 

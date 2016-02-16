@@ -19,6 +19,7 @@ export enum EventType {
     RuntimeError,
     NewDraft,
     CopyDraft,
+    HideHistoryEntry,
 }
 
 export enum EditorMode {
@@ -155,7 +156,12 @@ export module ReadyState {
         else if ( event === EventType.PalettModeSelect ) {
 	    struct = ObjectHelpers.update( struct, { endInfo: data } );
         }
-        
+
+        else if ( event === EventType.HideHistoryEntry ) {
+            let user = struct.user.hideDcoumnet( data );
+	    struct = ObjectHelpers.update( struct, { user: user } );
+        }
+                
 	else {
 	    console.log( "undexpected event: ", event, data );
 	}

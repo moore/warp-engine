@@ -272,3 +272,8 @@ div.color-swatch {
   left: -5px;
   transform: rotate(45deg);
 }
+
+
+.arcive .arcive-button {
+    display : none;
+}

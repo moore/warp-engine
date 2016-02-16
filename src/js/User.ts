@@ -9,6 +9,7 @@ export module User  {
 	addDocument( title: string, cap: Cap.Cap ): User;
 	getHistory( ): any;
 	save( store: Store.Store ): Promise<any>; //BUG: add better type
+        hideDcoumnet( docId: string ): User;
     }
 
     interface Entry {
@@ -17,6 +18,7 @@ export module User  {
 	name   : string;
 	read   : string;
 	write  : string;
+        hidden : boolean;
     }
 
     interface UserRecord {
@@ -53,9 +55,10 @@ export module User  {
 
     function init ( fCap: Cap.Cap, fUserRecord: UserRecord ) : User {
 	var self = {
-	    addDocument : addDocument,
-	    getHistory  : getHistory,
-	    save        : save,
+	    addDocument  : addDocument,
+	    getHistory   : getHistory,
+	    save         : save,
+            hideDcoumnet : hideDcoumnet,
 	};
 
 	fUserRecord = ObjectHelpers.deepFreeze( fUserRecord );
@@ -87,6 +90,15 @@ export module User  {
 	    return init( fCap, newUserRecord );
 	}
 
+        function hideDcoumnet( docId: string ): User {
+	    let newUserRecord = hideDcoumnetWorker( fUserRecord, docId );
+
+            if ( newUserRecord === fUserRecord )
+                return self;
+            
+	    return init( fCap, newUserRecord );
+        }
+
 	function getHistory ( ) {
 	    return fUserRecord.history;
 	}
@@ -99,6 +111,7 @@ export module User  {
 		
             return store.save( fCap, serial, dataType, userString );
 	}
+
     }
 
 
@@ -114,7 +127,9 @@ export module User  {
 
 	    if ( head.title === title
 		 && head.read === read
-		 && head.write === write )
+		 && head.write === write
+                 && head.hidden !== true
+               )
 		return userRecord;
 	}
 
@@ -124,6 +139,7 @@ export module User  {
 	    name   : "",
 	    read   : read,
 	    write  : write,
+            hidden : false,
 	};
 
 	var newHistory: Array<Entry> = [ entry ];
@@ -155,7 +171,37 @@ export module User  {
 	return newRecord;
     }
 
+    function hideDcoumnetWorker ( userRecord : UserRecord, read: string ) : UserRecord {
 
+	var history = userRecord.history;
+        var found   = false;
+	var newHistory: Array<Entry> = [ ];
+
+	for ( var i = 0 ; i < history.length ; i++ ) {
+	    var current = history[ i ];
+
+	    if ( current.read === read && current.hidden !== true ) {
+                found = true;
+                current = ObjectHelpers.update( current, { hidden: true } );
+            }
+
+	    newHistory.push( current );
+	}
+
+        if ( found !== true )
+            return userRecord;
+        
+	let newRecord: UserRecord  = {
+	    format  : 1,
+	    serial  : userRecord.serial + 1,
+	    name    : userRecord.name,
+	    editor  : userRecord.editor,
+	    history : newHistory,
+	};
+
+	return newRecord;
+    }
+    
     function newUser ( ) {
 	var user: UserRecord = {
 	    format  : 1,
