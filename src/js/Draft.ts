@@ -144,15 +144,15 @@ export module Draft  {
 
         else if ( event === DraftEvent.SaveError )
             result = Controler.makeState(
-                DraftState.SaveError, stopAccptor, {
-                    cap    : data,
+                DraftState.SaveError, readyAccptor, {
+                    cap    : struct.cap,
                     saved  : false,
                     doc    : struct.doc,
                 } );
 
         else if ( event === DraftEvent.SerialError ) {
             result = Controler.makeState(
-                DraftState.SerialError, stopAccptor, {
+                DraftState.SerialError, readyAccptor, {
                     cap    : struct.cap,
                     saved  : false,
                     doc    : struct.doc,

@@ -143,7 +143,13 @@ export module App  {
             if ( struct.draftState === DraftState.SerialError )
                 fUi.alert( "The draft appears to be open in another tab.\n"
                            + "Try switching to other tab or reloading to "
-                           + "allow editing." );
+                           + "allow editing. ( You may have also shared the edit link "
+                           + "with another user who is currently editing it.)" );
+
+
+            if ( struct.draftState === DraftState.SaveError )
+                fUi.alert( "The draft cound not be saved."
+                           + "This issue will probbly correct itself." );
 
             
             changed( fStruct.draft, struct.draft, 'cap', ( ) => {
@@ -154,9 +160,22 @@ export module App  {
             changed( fStruct, struct, 'user', ( ) => {
                 if ( fStruct.user !== undefined ) {
                     fUi.update( state, struct );
-                    struct.user.save( fStore ).then( result => {
-                        fControler.accept( EventType.UserSaved, result.serial );
-                    } );
+                    struct.user.save( fStore )
+                        .then( result => {
+                            fControler.accept( EventType.UserSaved, result.serial );
+                        } )
+                        .catch( error => {
+                            if ( error.code === 'serial' )
+                                fUi.alert( "This applacation appears to be open in another "
+                                           + "tab.\nTry switching to other tab or reloading "
+                                           + "or changes may not be saved." );
+                            else 
+                                fUi.alert( "Error updateding your account with the "
+                                           + "latest information about your projects."
+                                           + " This could result in loss of data." );
+
+                        } );
+                    
                 }
             } );
 
