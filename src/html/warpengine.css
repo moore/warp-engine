@@ -277,3 +277,17 @@ div.color-swatch {
 .arcive .arcive-button {
     display : none;
 }
+
+.history li {
+    overflow : hidden;
+}
+
+.arcive-button {
+    float : right;
+    opacity : 0.0;
+}
+
+li:hover .arcive-button {
+    opacity : 1.0;
+}
+
