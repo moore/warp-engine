@@ -128,7 +128,6 @@ export module Ui {
 	}
 
 	function handleClickCatcher ( ) {
-	    console.log( "click" );
 	    fClickCatcher.classList.add( 'hidden' );
 
 	    if ( fCatcherCallback !== undefined )
