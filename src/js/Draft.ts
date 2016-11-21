@@ -31,13 +31,17 @@ export enum DraftEvent {
 }
 
 export interface DraftDoc {
-    format  : number;
-    serial  : number;
-    title   : string;
-    threads : Array<number>;
-    colors  : Array<number>;
-    code    : string;
-    log     : string;
+    format      : number;
+    serial      : number;
+    title       : string;
+    threads     : Array<number>;
+    colors      : Array<number>;
+    threading   : Array<number>;
+    weftThreads : Array<number>;
+    treadling   : Array<number>;
+    tieup       : Array<number>;
+    code        : string;
+    log         : string;
 }
 
 export interface DraftStruct {
@@ -323,6 +327,18 @@ export module Draft  {
         if ( Array.isArray( parsed.colors ) !== true )
             return error( "colors is not Array" );
 
+        if ( Array.isArray( parsed.threading ) !== true )
+            return error( "threading is not Array" );
+
+        if ( Array.isArray( parsed.weftThreads ) !== true )
+            return error( "weftThreads is not Array" );
+
+        if ( Array.isArray( parsed.treadling ) !== true )
+            return error( "treadling is not Array" );
+
+        if ( Array.isArray( parsed.tieup ) !== true )
+            return error( "tieup is not Array" );
+        
         if ( typeof( parsed.code ) !== "string" )
             return error( "code is not string" );
 
@@ -330,13 +346,17 @@ export module Draft  {
             return error( "log is not string" );
 
         return {
-            format  : 1,
-            serial  : parsed.serial,
-            title   : parsed.title,
-            threads : parsed.threads,
-            colors  : parsed.colors,
-            code    : parsed.code,
-            log     : parsed.log,
+            format      : 1,
+            serial      : parsed.serial,
+            title       : parsed.title,
+            threads     : parsed.threads,
+            colors      : parsed.colors,
+            threading   : parsed.threading,
+            weftThreads : parsed.weftThreads,
+            treadling   : parsed.treadling,
+            tieup       : parsed.tieup,
+            code        : parsed.code,
+            log         : parsed.log,
         };
     }    
 
@@ -370,13 +390,17 @@ export module Draft  {
 
     function emptyDraft ( ) : DraftDoc {
         return {
-            format  : 1,
-            serial  : 1,
-            title   : "Untitled draft",
-            threads : [],
-            colors  : [],
-            code    : '',
-            log     : '',
+            format      : 1,
+            serial      : 1,
+            title       : "Untitled draft",
+            threads     : [],
+            colors      : [],
+            threading   : [],
+            weftThreads : [],
+            treadling   : [],
+            tieup       : [],
+            code        : '',
+            log         : '',
         };
     }
 }

@@ -36,8 +36,13 @@ export module WarpDisplay  {
 	}
 
 	function draw ( warp ) {
-	    var threads = warp.threads;
-	    var colors  = warp.colors;
+            console.log("WARP: ", warp);
+	    var threads     = warp.threads;
+            var threading   = warp.threading;
+            var treadling   = warp.treadling;
+            var weftthreads = warp.weftThreads;
+            var tieup       = warp.tieup;
+	    var colors      = warp.colors;
 
 	    var threadWidth;
 	    var warpWidth;
@@ -56,18 +61,38 @@ export module WarpDisplay  {
 	    
 	    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-	    for ( var i = 0 ; i < threads.length ; i++ ) {
-		var offset = i * threadWidth;
+            for ( var j = 0 ; j < treadling.length ; j++ ) {
+                var wOffset = j * threadWidth;
 
-		ctx.fillStyle = colors[ threads[ i ] ];
-		ctx.fillRect( offset, 0, threadWidth, canvas.height );
-	    }                 
+	        for ( var i = 0 ; i < threads.length ; i++ ) {
+		    var offset = i * threadWidth;
+
+                    var shaft = threading[i];
+                    var shafts = tieup[treadling[j] - 1];
+
+                    if (contains( shaft, shafts ))
+                        ctx.fillStyle = colors[ weftthreads[j] ];
+                    else
+                        ctx.fillStyle = colors[ threads[ i ] ];
+
+		    ctx.fillRect( offset, wOffset, threadWidth, threadWidth );
+	        }
+            }
 	    
 	    container.style.width = ((warpWidth + 2) + "px");
 	    updateWarpCount( threads );
 	    buildPalette(warp.colors, warp.threads);
 	}
 
+        function contains ( value, list ) {
+            
+            for ( var i = 0 ; i < list.length ; i++ )
+                if ( value === list[i] )
+                    return true;
+
+            return false;
+        }
+        
 	function updateWarpCount ( threads ) {
 	    warpEnds.innerHTML = "";
 

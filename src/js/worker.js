@@ -23,7 +23,14 @@ function receiveMessage( event ) {
         eval( event.data );
         result.threads     = threads;
         result.colors      = colors;
+        result.shafts      = shafts;
+        result.treadles    = treadles;
+        result.threading   = threading;
+        result.weftThreads = weftThreads;
+        result.treadling   = treadling;
+        result.tieup       = tieup;
         result.captainsLog = captainsLog;
+
     } catch (e) {
         result.error = e.stack;
     }

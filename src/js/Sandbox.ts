@@ -1,10 +1,14 @@
 export module Sandbox {
 
     export interface SandboxResult {
-	code    : string;
-	threads : Array<number>;
-        colors  : Array<number>;
-        log     : string;
+	code        : string;
+	threads     : Array<number>;
+        colors      : Array<number>;
+        threading   : Array<number>;
+        weftThreads : Array<number>;
+        treadling   : Array<number>;
+        tieup       : Array<number>;
+        log         : string;
     }
 
     export interface SandboxError {
@@ -49,10 +53,14 @@ export module Sandbox {
 
                       else if ( fResolve !== undefined ) {
 			  var sResult: SandboxResult = {
-			      code    : result.code,
-                              threads : result.threads,
-                              colors  : result.colors,
-                              log     : result.captainsLog,
+			      code        : result.code,
+                              threads     : result.threads,
+                              colors      : result.colors,
+                              threading   : result.threading,
+                              weftThreads : result.weftThreads,
+                              treadling   : result.treadling,
+                              tieup       : result.tieup,
+                              log         : result.captainsLog,
 			  };
 			  
 			  fResolve( sResult );
