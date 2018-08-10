@@ -85,6 +85,8 @@ export module WarpDisplay  {
 	}
 
         function contains ( value, list ) {
+            if ( list === undefined )
+                return false;
             
             for ( var i = 0 ; i < list.length ; i++ )
                 if ( value === list[i] )
